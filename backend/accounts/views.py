@@ -6,6 +6,9 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
 from django.contrib.auth import get_user_model
+from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiExample
+from drf_spectacular.types import OpenApiTypes
+from rest_framework import serializers as drf_serializers
 from .serializers import RegisterSerializer, UserSerializer
 from .utils import api_response
 
@@ -15,9 +18,53 @@ from .utils import api_response
 User = get_user_model()
 
 
+class LoginRequestSerializer(drf_serializers.Serializer):
+    email = drf_serializers.EmailField()
+    password = drf_serializers.CharField(write_only=True)
+
+
+class TokenResponseSerializer(drf_serializers.Serializer):
+    access = drf_serializers.CharField()
+    refresh = drf_serializers.CharField()
+
+
+class LoginResponseSerializer(drf_serializers.Serializer):
+    user = UserSerializer()
+    tokens = TokenResponseSerializer()
+
+
+class RefreshRequestSerializer(drf_serializers.Serializer):
+    refresh = drf_serializers.CharField()
+
+
+class LogoutRequestSerializer(drf_serializers.Serializer):
+    refresh = drf_serializers.CharField()
+
+
 class RegisterView(APIView):
     permission_classes = [AllowAny]
 
+    @extend_schema(
+        tags=['Authentication'],
+        request=RegisterSerializer,
+        responses={
+            201: OpenApiResponse(description='User registered successfully'),
+            400: OpenApiResponse(description='Validation error'),
+        },
+        examples=[
+            OpenApiExample(
+                'Register Example',
+                value={
+                    'email': 'user@example.com',
+                    'password': 'SecurePass123!',
+                    'password2': 'SecurePass123!',
+                    'first_name': 'John',
+                    'last_name': 'Doe'
+                },
+                request_only=True,
+            ),
+        ]
+    )
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
@@ -50,6 +97,24 @@ class RegisterView(APIView):
 class LoginView(TokenObtainPairView):
     permission_classes = [AllowAny]
 
+    @extend_schema(
+        tags=['Authentication'],
+        request=LoginRequestSerializer,
+        responses={
+            200: OpenApiResponse(description='Login successful'),
+            401: OpenApiResponse(description='Invalid credentials'),
+        },
+        examples=[
+            OpenApiExample(
+                'Login Example',
+                value={
+                    'email': 'user@example.com',
+                    'password': 'SecurePass123!'
+                },
+                request_only=True,
+            ),
+        ]
+    )
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         
@@ -84,6 +149,23 @@ class LoginView(TokenObtainPairView):
 class RefreshTokenView(TokenRefreshView):
     permission_classes = [AllowAny]
 
+    @extend_schema(
+        tags=['Authentication'],
+        request=RefreshRequestSerializer,
+        responses={
+            200: OpenApiResponse(description='Token refreshed successfully'),
+            401: OpenApiResponse(description='Invalid or expired token'),
+        },
+        examples=[
+            OpenApiExample(
+                'Refresh Token Example',
+                value={
+                    'refresh': 'eyJ0eXAiOiJKV1QiLCJhbGc...'
+                },
+                request_only=True,
+            ),
+        ]
+    )
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         
@@ -110,6 +192,23 @@ class RefreshTokenView(TokenRefreshView):
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        tags=['Authentication'],
+        request=LogoutRequestSerializer,
+        responses={
+            205: OpenApiResponse(description='Logout successful'),
+            400: OpenApiResponse(description='Invalid token'),
+        },
+        examples=[
+            OpenApiExample(
+                'Logout Example',
+                value={
+                    'refresh': 'eyJ0eXAiOiJKV1QiLCJhbGc...'
+                },
+                request_only=True,
+            ),
+        ]
+    )
     def post(self, request):
         try:
             refresh_token = request.data.get('refresh')
@@ -136,6 +235,13 @@ class LogoutView(APIView):
 class MeView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(
+        tags=['User'],
+        responses={
+            200: UserSerializer,
+            401: OpenApiResponse(description='Unauthorized'),
+        },
+    )
     def get(self, request):
         serializer = UserSerializer(request.user)
         return api_response(
