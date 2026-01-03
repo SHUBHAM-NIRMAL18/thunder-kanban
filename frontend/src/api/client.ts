@@ -1,5 +1,6 @@
-import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
-import { ApiResponse } from './types';
+import axios, { AxiosError } from 'axios';
+import type { InternalAxiosRequestConfig } from 'axios';
+import type { ApiResponse } from './types';
 import toast from 'react-hot-toast';
 
 const api = axios.create({
