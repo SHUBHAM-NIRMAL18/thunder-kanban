@@ -64,34 +64,39 @@ export const useBoards = () => {
     }
   }, [])
 
-  const duplicateBoard = useCallback(async (id: number) => {
-    const originalBoard = boards.find((b) => b.id === id)
-    if (!originalBoard) {
-      toast.error('Board not found')
-      throw new Error('Board not found')
-    }
+  const duplicateBoard = useCallback(
+    async (id: number) => {
+      const originalBoard = boards.find((b) => b.id === id)
+      if (!originalBoard) {
+        toast.error('Board not found')
+        throw new Error('Board not found')
+      }
 
-    const copyPattern = new RegExp(`^${originalBoard.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} \\(Copy( \\d+)?\\)$`)
-    const existingCopies = boards.filter(
-      (b) => copyPattern.test(b.name) || b.name === `${originalBoard.name} (Copy)`
-    )
+      const copyPattern = new RegExp(
+        `^${originalBoard.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} \\(Copy( \\d+)?\\)$`
+      )
+      const existingCopies = boards.filter(
+        (b) => copyPattern.test(b.name) || b.name === `${originalBoard.name} (Copy)`
+      )
 
-    if (existingCopies.length >= 2) {
-      toast.error('Maximum 2 copies allowed per board')
-      throw new Error('Maximum 2 copies allowed')
-    }
+      if (existingCopies.length >= 2) {
+        toast.error('Maximum 2 copies allowed per board')
+        throw new Error('Maximum 2 copies allowed')
+      }
 
-    try {
-      const response = await boardsApi.duplicate(id)
-      setBoards((prev) => [response.data, ...prev])
-      toast.success('Board duplicated')
-      return response.data
-    } catch (err) {
-      console.error('Failed to duplicate board:', err)
-      toast.error('Failed to duplicate board')
-      throw err
-    }
-  }, [boards])
+      try {
+        const response = await boardsApi.duplicate(id)
+        setBoards((prev) => [response.data, ...prev])
+        toast.success('Board duplicated')
+        return response.data
+      } catch (err) {
+        console.error('Failed to duplicate board:', err)
+        toast.error('Failed to duplicate board')
+        throw err
+      }
+    },
+    [boards]
+  )
 
   return {
     boards,

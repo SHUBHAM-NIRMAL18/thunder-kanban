@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import {
   DndContext,
   DragOverlay,
@@ -12,11 +12,11 @@ import {
   type DragOverEvent,
 } from '@dnd-kit/core'
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable'
-import { useState } from 'react'
 import { Column } from './Column'
 import { TaskCard } from './TaskCard'
-import { TaskModal } from './TaskModel'
+import { TaskModal } from './TaskModal'
 import { ColumnModal } from './ColumnModal'
+import { TaskPreviewModal } from './TaskPreviewModal'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useKanban } from '../hooks/useKanban'
 import type { Task } from '@/api/endpoints/boards'
@@ -52,6 +52,7 @@ export const KanbanBoard = ({ boardId }: KanbanBoardProps) => {
 
   const [activeTask, setActiveTask] = useState<Task | null>(null)
   const [addingToColumnId, setAddingToColumnId] = useState<number | null>(null)
+  const [previewTask, setPreviewTask] = useState<Task | null>(null)
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -64,71 +65,77 @@ export const KanbanBoard = ({ boardId }: KanbanBoardProps) => {
     })
   )
 
-  const handleDragStart = useCallback((event: DragStartEvent) => {
-    const { active } = event
-    const taskId = active.id as number
+  const handleDragStart = useCallback(
+    (event: DragStartEvent) => {
+      const { active } = event
+      const taskId = active.id as number
 
-    if (!board) return
+      if (!board) return
 
-    for (const column of board.columns) {
-      const task = column.tasks.find((t) => t.id === taskId)
-      if (task) {
-        setActiveTask(task)
-        break
+      for (const column of board.columns) {
+        const task = column.tasks.find((t) => t.id === taskId)
+        if (task) {
+          setActiveTask(task)
+          break
+        }
       }
-    }
-  }, [board])
+    },
+    [board]
+  )
 
   const handleDragOver = useCallback((event: DragOverEvent) => {
     // Handle drag over for visual feedback if needed
   }, [])
 
-  const handleDragEnd = useCallback((event: DragEndEvent) => {
-    const { active, over } = event
-    setActiveTask(null)
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event
+      setActiveTask(null)
 
-    if (!over || !board) return
+      if (!over || !board) return
 
-    const taskId = active.id as number
-    let targetColumnId: number | null = null
-    let newPosition = 0
+      const taskId = active.id as number
+      let targetColumnId: number | null = null
+      let newPosition = 0
 
-    if (String(over.id).startsWith('column-')) {
-      targetColumnId = parseInt(String(over.id).replace('column-', ''))
-      const targetColumn = board.columns.find((c) => c.id === targetColumnId)
-      newPosition = targetColumn?.tasks.length || 0
-    } else {
-      const overTaskId = over.id as number
+      if (String(over.id).startsWith('column-')) {
+        targetColumnId = parseInt(String(over.id).replace('column-', ''))
+        const targetColumn = board.columns.find((c) => c.id === targetColumnId)
+        newPosition = targetColumn?.tasks.length || 0
+      } else {
+        const overTaskId = over.id as number
+        for (const column of board.columns) {
+          const taskIndex = column.tasks.findIndex((t) => t.id === overTaskId)
+          if (taskIndex !== -1) {
+            targetColumnId = column.id
+            newPosition = taskIndex
+            break
+          }
+        }
+      }
+
+      if (targetColumnId === null) return
+
+      let sourceColumnId: number | null = null
       for (const column of board.columns) {
-        const taskIndex = column.tasks.findIndex((t) => t.id === overTaskId)
-        if (taskIndex !== -1) {
-          targetColumnId = column.id
-          newPosition = taskIndex
+        if (column.tasks.some((t) => t.id === taskId)) {
+          sourceColumnId = column.id
           break
         }
       }
-    }
 
-    if (targetColumnId === null) return
+      if (sourceColumnId === null) return
 
-    let sourceColumnId: number | null = null
-    for (const column of board.columns) {
-      if (column.tasks.some((t) => t.id === taskId)) {
-        sourceColumnId = column.id
-        break
+      if (sourceColumnId === targetColumnId) {
+        const column = board.columns.find((c) => c.id === sourceColumnId)
+        const currentIndex = column?.tasks.findIndex((t) => t.id === taskId) ?? -1
+        if (currentIndex === newPosition) return
       }
-    }
 
-    if (sourceColumnId === null) return
-
-    if (sourceColumnId === targetColumnId) {
-      const column = board.columns.find((c) => c.id === sourceColumnId)
-      const currentIndex = column?.tasks.findIndex((t) => t.id === taskId) ?? -1
-      if (currentIndex === newPosition) return
-    }
-
-    moveTask(taskId, { column: targetColumnId, position: newPosition })
-  }, [board, moveTask])
+      moveTask(taskId, { column: targetColumnId, position: newPosition })
+    },
+    [board, moveTask]
+  )
 
   const handleAddTask = (columnId: number) => {
     setAddingToColumnId(columnId)
@@ -167,55 +174,92 @@ export const KanbanBoard = ({ boardId }: KanbanBoardProps) => {
     }
   }
 
+  const handleTaskClick = (task: Task) => {
+    setPreviewTask(task)
+  }
+
   if (!board) return null
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCorners}
-      onDragStart={handleDragStart}
-      onDragOver={handleDragOver}
-      onDragEnd={handleDragEnd}
-    >
-      <div className="flex gap-4 overflow-x-auto pb-4 h-full">
-        {board.columns.map((column) => (
-          <Column
-            key={column.id}
-            column={column}
-            isEditing={editingColumnId === column.id}
-            onEditColumn={() => setEditingColumn(column.id)}
-            onDeleteColumn={() => openDeleteModal('column', column.id, column.name)}
-            onUpdateColumnName={(name) => updateColumn(column.id, { name })}
-            onAddTask={() => handleAddTask(column.id)}
-            onEditTask={(task) => openTaskModal(task)}
-            onDeleteTask={(task) => openDeleteModal('task', task.id, task.title)}
-          />
-        ))}
-
-        <div className="flex-shrink-0 w-72">
-          <button
-            onClick={openColumnModal}
-            className="w-full flex items-center justify-center gap-2 py-3 text-gray-600 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors border-2 border-dashed border-gray-300"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            Add Column
-          </button>
+    <div className="h-full flex flex-col">
+      <div className="flex items-center justify-between mb-4 flex-shrink-0">
+        <div className="text-sm text-gray-500">
+          {board.columns.length} column{board.columns.length !== 1 ? 's' : ''} •{' '}
+          {board.columns.reduce((acc, col) => acc + col.tasks.length, 0)} task
+          {board.columns.reduce((acc, col) => acc + col.tasks.length, 0) !== 1 ? 's' : ''}
         </div>
+        <button
+          onClick={openColumnModal}
+          disabled={board.columns.length >= 10}
+          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          Add Column
+          {board.columns.length >= 10 && <span className="text-xs text-gray-400">(Max 10)</span>}
+        </button>
       </div>
 
-      <DragOverlay>
-        {activeTask ? (
-          <div className="rotate-3">
-            <TaskCard
-              task={activeTask}
-              onEdit={() => {}}
-              onDelete={() => {}}
-            />
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCorners}
+        onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
+        onDragEnd={handleDragEnd}
+      >
+        <div className="flex-1 overflow-x-auto">
+          <div className="flex gap-0 h-full min-h-[500px]">
+            {board.columns.map((column, index) => (
+              <div
+                key={column.id}
+                className={`flex-shrink-0 ${
+                  index !== board.columns.length - 1 ? 'border-r-2 border-gray-300' : ''
+                }`}
+              >
+                <Column
+                  column={column}
+                  isEditing={editingColumnId === column.id}
+                  onEditColumn={() => setEditingColumn(column.id)}
+                  onDeleteColumn={() => openDeleteModal('column', column.id, column.name)}
+                  onUpdateColumnName={(name) => updateColumn(column.id, { name })}
+                  onAddTask={() => handleAddTask(column.id)}
+                  onEditTask={(task) => openTaskModal(task)}
+                  onDeleteTask={(task) => openDeleteModal('task', task.id, task.title)}
+                  onTaskClick={handleTaskClick}
+                />
+              </div>
+            ))}
+
+            {board.columns.length === 0 && (
+              <div className="flex-1 flex items-center justify-center">
+                <div className="text-center">
+                  <span className="text-6xl mb-4 block">📋</span>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No columns yet</h3>
+                  <p className="text-gray-500 mb-4">Add your first column to get started</p>
+                  <button
+                    onClick={openColumnModal}
+                    className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                    Add Column
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
-        ) : null}
-      </DragOverlay>
+        </div>
+
+        <DragOverlay>
+          {activeTask ? (
+            <div className="rotate-3">
+              <TaskCard task={activeTask} onEdit={() => {}} onDelete={() => {}} onClick={() => {}} />
+            </div>
+          ) : null}
+        </DragOverlay>
+      </DndContext>
 
       <TaskModal
         isOpen={isTaskModalOpen}
@@ -228,10 +272,24 @@ export const KanbanBoard = ({ boardId }: KanbanBoardProps) => {
         columnId={addingToColumnId || 0}
       />
 
-      <ColumnModal
-        isOpen={isColumnModalOpen}
-        onClose={closeColumnModal}
-        onSubmit={handleColumnSubmit}
+      <ColumnModal isOpen={isColumnModalOpen} onClose={closeColumnModal} onSubmit={handleColumnSubmit} />
+
+      <TaskPreviewModal
+        isOpen={!!previewTask}
+        onClose={() => setPreviewTask(null)}
+        task={previewTask}
+        onEdit={() => {
+          if (previewTask) {
+            openTaskModal(previewTask)
+            setPreviewTask(null)
+          }
+        }}
+        onDelete={() => {
+          if (previewTask) {
+            openDeleteModal('task', previewTask.id, previewTask.title)
+            setPreviewTask(null)
+          }
+        }}
       />
 
       <ConfirmDialog
@@ -246,6 +304,6 @@ export const KanbanBoard = ({ boardId }: KanbanBoardProps) => {
         cancelText="Cancel"
         variant="danger"
       />
-    </DndContext>
+    </div>
   )
 }

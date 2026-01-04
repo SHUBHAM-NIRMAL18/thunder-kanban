@@ -13,6 +13,7 @@ interface ColumnProps {
   onAddTask: () => void
   onEditTask: (task: Task) => void
   onDeleteTask: (task: Task) => void
+  onTaskClick: (task: Task) => void
 }
 
 export const Column = ({
@@ -24,6 +25,7 @@ export const Column = ({
   onAddTask,
   onEditTask,
   onDeleteTask,
+  onTaskClick,
 }: ColumnProps) => {
   const [editName, setEditName] = useState(column.name)
   const [showMenu, setShowMenu] = useState(false)
@@ -33,24 +35,22 @@ export const Column = ({
     data: { columnId: column.id },
   })
 
-const handleNameSubmit = () => {
-  const trimmedName = editName.trim()
-  
-  if (!trimmedName) {
-    setEditName(column.name)
-    onEditColumn()
-    return
-  }
+  const handleNameSubmit = () => {
+    const trimmedName = editName.trim()
 
-  if (trimmedName === column.name) {
-    onEditColumn()
-    return
-  }
+    if (!trimmedName) {
+      setEditName(column.name)
+      onEditColumn()
+      return
+    }
 
-  // Check for duplicate names in other columns
-  // We need to get board from parent or store
-  onUpdateColumnName(trimmedName)
-}
+    if (trimmedName === column.name) {
+      onEditColumn()
+      return
+    }
+
+    onUpdateColumnName(trimmedName)
+  }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
@@ -63,9 +63,9 @@ const handleNameSubmit = () => {
 
   return (
     <div
-      className={`flex-shrink-0 w-72 bg-gray-100 rounded-lg flex flex-col max-h-full border-r-2 border-gray-300 last:border-r-0 ${
-    isOver ? 'ring-2 ring-blue-400' : ''
-    }`}
+      className={`flex-shrink-0 w-72 bg-gray-100 rounded-lg flex flex-col max-h-full ${
+        isOver ? 'ring-2 ring-blue-400' : ''
+      }`}
     >
       <div className="p-3 flex items-center justify-between">
         {isEditing ? (
@@ -139,6 +139,7 @@ const handleNameSubmit = () => {
               task={task}
               onEdit={() => onEditTask(task)}
               onDelete={() => onDeleteTask(task)}
+              onClick={() => onTaskClick(task)}
             />
           ))}
         </SortableContext>

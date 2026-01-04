@@ -34,7 +34,6 @@ export const ColumnModal = ({ isOpen, onClose, onSubmit }: ColumnModalProps) => 
       return
     }
 
-    // Check for duplicate column names
     if (board) {
       const isDuplicate = board.columns.some(
         (col) => col.name.toLowerCase() === trimmedName.toLowerCase()
