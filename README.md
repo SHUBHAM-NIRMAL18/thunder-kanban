@@ -45,7 +45,8 @@ A production-grade Kanban board application built with Django REST Framework and
 
 ## Live Demo
 
-> Coming soon
+> Frontend: https://thunder-kanban.vercel.app/
+> Backend: https://thunder-kanban-api.onrender.com/api/docs/ OR https://thunder-kanban-api.onrender.com/api/redoc/
 
 ---
 
