@@ -17,6 +17,7 @@ A production-grade Kanban board application built with Django REST Framework and
 - Duplicate column name validation
 - Task preview modal with full details
 - Responsive design
+- LocalStorage for boards, columns, and tasks data to ensure instant initial loads and reduce API call
 
 ---
 
