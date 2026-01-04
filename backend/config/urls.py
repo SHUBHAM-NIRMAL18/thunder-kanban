@@ -23,6 +23,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path('api/v1/auth/', include('accounts.urls')),
     path('api/v1/boards/', include('boards.urls')),
+    path('api/v1/columns/', include('columns.urls')),
 
 
     #API docs endpoints

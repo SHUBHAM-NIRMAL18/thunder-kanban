@@ -115,10 +115,12 @@ class BoardViewSet(viewsets.ModelViewSet):
     lookup_field = 'pk'
 
     def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False) or not self.request.user.is_authenticated:
+            return Board.objects.none()
+    
         return Board.objects.filter(
             owner=self.request.user,
-            is_archived=False
-        ).prefetch_related('columns__tasks')
+            is_archived=False).prefetch_related('columns__tasks')
 
     def get_serializer_class(self):
         if self.action == 'retrieve':
