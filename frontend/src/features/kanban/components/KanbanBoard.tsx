@@ -17,6 +17,7 @@ import { TaskCard } from './TaskCard'
 import { TaskModal } from './TaskModal'
 import { ColumnModal } from './ColumnModal'
 import { TaskPreviewModal } from './TaskPreviewModal'
+import { BoardSkeleton } from './BoardSkeleton'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useKanban } from '../hooks/useKanban'
 import type { Task } from '@/api/endpoints/boards'
@@ -28,6 +29,9 @@ interface KanbanBoardProps {
 export const KanbanBoard = ({ boardId }: KanbanBoardProps) => {
   const {
     board,
+    isLoading,
+    isFetching,
+    error,
     isTaskModalOpen,
     isColumnModalOpen,
     isDeleteModalOpen,
@@ -48,7 +52,7 @@ export const KanbanBoard = ({ boardId }: KanbanBoardProps) => {
     updateTask,
     deleteTask,
     moveTask,
-  } = useKanban()
+  } = useKanban(boardId)
 
   const [activeTask, setActiveTask] = useState<Task | null>(null)
   const [addingToColumnId, setAddingToColumnId] = useState<number | null>(null)
@@ -83,7 +87,7 @@ export const KanbanBoard = ({ boardId }: KanbanBoardProps) => {
     [board]
   )
 
-  const handleDragOver = useCallback((event: DragOverEvent) => {
+  const handleDragOver = useCallback((_event: DragOverEvent) => {
     // Handle drag over for visual feedback if needed
   }, [])
 
@@ -178,16 +182,68 @@ export const KanbanBoard = ({ boardId }: KanbanBoardProps) => {
     setPreviewTask(task)
   }
 
+  if (isLoading && !board) {
+    return <BoardSkeleton />
+  }
+
+  if (error && !board) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="text-center">
+          <span className="text-6xl mb-4 block">❌</span>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            Failed to load board
+          </h3>
+          <p className="text-gray-500 mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   if (!board) return null
 
   return (
     <div className="h-full flex flex-col">
       <div className="flex items-center justify-between mb-4 flex-shrink-0">
-        <div className="text-sm text-gray-500">
-          {board.columns.length} column{board.columns.length !== 1 ? 's' : ''} •{' '}
-          {board.columns.reduce((acc, col) => acc + col.tasks.length, 0)} task
-          {board.columns.reduce((acc, col) => acc + col.tasks.length, 0) !== 1 ? 's' : ''}
+        <div className="flex items-center gap-3">
+          <div className="text-sm text-gray-500">
+            {board.columns.length} column{board.columns.length !== 1 ? 's' : ''} •{' '}
+            {board.columns.reduce((acc, col) => acc + col.tasks.length, 0)} task
+            {board.columns.reduce((acc, col) => acc + col.tasks.length, 0) !== 1 ? 's' : ''}
+          </div>
+
+          {isFetching && (
+            <div className="flex items-center gap-1 text-xs text-gray-400">
+              <svg
+                className="w-3 h-3 animate-spin"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                />
+              </svg>
+              <span>Syncing...</span>
+            </div>
+          )}
         </div>
+
         <button
           onClick={openColumnModal}
           disabled={board.columns.length >= 10}
