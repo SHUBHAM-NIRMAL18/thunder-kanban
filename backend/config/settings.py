@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'drf_spectacular',
 
     'accounts',
+    'boards',
 
 ]
 
@@ -148,6 +149,8 @@ REST_FRAMEWORK = {
     ],
     'EXCEPTION_HANDLER': 'accounts.exceptions.custom_exception_handler',
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_PAGINATION_CLASS': 'core.pagination.StandardPagination',
+    'PAGE_SIZE': 20,
 }
 
 SPECTACULAR_SETTINGS = {
