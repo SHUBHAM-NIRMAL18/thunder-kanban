@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { useKanbanStore } from '../store/kanbanStore'
 
 interface ColumnModalProps {
   isOpen: boolean
@@ -13,6 +14,7 @@ export const ColumnModal = ({ isOpen, onClose, onSubmit }: ColumnModalProps) => 
   const [name, setName] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const board = useKanbanStore((state) => state.board)
 
   if (!isOpen) return null
 
@@ -20,19 +22,32 @@ export const ColumnModal = ({ isOpen, onClose, onSubmit }: ColumnModalProps) => 
     e.preventDefault()
     setError('')
 
-    if (!name.trim()) {
+    const trimmedName = name.trim()
+
+    if (!trimmedName) {
       setError('Column name is required')
       return
     }
 
-    if (name.length > 50) {
+    if (trimmedName.length > 50) {
       setError('Column name cannot exceed 50 characters')
       return
     }
 
+    // Check for duplicate column names
+    if (board) {
+      const isDuplicate = board.columns.some(
+        (col) => col.name.toLowerCase() === trimmedName.toLowerCase()
+      )
+      if (isDuplicate) {
+        setError('A column with this name already exists')
+        return
+      }
+    }
+
     setIsLoading(true)
     try {
-      await onSubmit(name.trim())
+      await onSubmit(trimmedName)
       setName('')
     } catch {
       // Error handled in hook
