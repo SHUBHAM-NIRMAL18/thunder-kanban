@@ -11,102 +11,149 @@ import type { CreateColumnRequest, UpdateColumnRequest } from '@/api/endpoints/c
 import type { BoardDetail } from '@/api/endpoints/boards'
 
 export const useKanban = (boardId: number) => {
-  const store = useKanbanStore()
-  const previousBoardRef = useRef<BoardDetail | null>(null)
+  const board = useKanbanStore((state) => state.board)
+  const isLoading = useKanbanStore((state) => state.isLoading)
+  const isFetching = useKanbanStore((state) => state.isFetching)
+  const error = useKanbanStore((state) => state.error)
+  const selectedTask = useKanbanStore((state) => state.selectedTask)
+  const isTaskModalOpen = useKanbanStore((state) => state.isTaskModalOpen)
+  const isColumnModalOpen = useKanbanStore((state) => state.isColumnModalOpen)
+  const isDeleteModalOpen = useKanbanStore((state) => state.isDeleteModalOpen)
+  const deleteTarget = useKanbanStore((state) => state.deleteTarget)
+  const editingColumnId = useKanbanStore((state) => state.editingColumnId)
+
+  const actions = useKanbanStore((state) => ({
+    setBoard: state.setBoard,
+    setBoardWithCache: state.setBoardWithCache,
+    setLoading: state.setLoading,
+    setFetching: state.setFetching,
+    setError: state.setError,
+    openTaskModal: state.openTaskModal,
+    closeTaskModal: state.closeTaskModal,
+    openColumnModal: state.openColumnModal,
+    closeColumnModal: state.closeColumnModal,
+    openDeleteModal: state.openDeleteModal,
+    closeDeleteModal: state.closeDeleteModal,
+    setEditingColumn: state.setEditingColumn,
+    addColumn: state.addColumn,
+    updateColumn: state.updateColumn,
+    removeColumn: state.removeColumn,
+    reorderColumns: state.reorderColumns,
+    addTask: state.addTask,
+    updateTask: state.updateTask,
+    removeTask: state.removeTask,
+    moveTask: state.moveTask,
+  }))
+
+  const isMountedRef = useRef(true)
+  const currentBoardIdRef = useRef(boardId)
 
   const fetchBoard = useCallback(async (id: number, isBackgroundRefresh = false) => {
+    if (!isMountedRef.current || currentBoardIdRef.current !== id) return
+
     if (!isBackgroundRefresh) {
       const cached = cacheService.get<BoardDetail>(CacheKeys.board(id))
       if (cached) {
-        store.setBoard(cached)
-        store.setFetching(true)
+        actions.setBoard(cached)
+        actions.setFetching(true)
       } else {
-        store.setLoading(true)
+        actions.setLoading(true)
       }
     } else {
-      store.setFetching(true)
+      actions.setFetching(true)
     }
 
-    store.setError(null)
+    actions.setError(null)
 
     try {
       const response = await boardsApi.get(id)
-      store.setBoardWithCache(response.data)
+
+      if (isMountedRef.current && currentBoardIdRef.current === id) {
+        actions.setBoardWithCache(response.data)
+      }
     } catch (error) {
       console.error('Failed to fetch board:', error)
-      if (!store.board) {
-        store.setError('Failed to load board')
-        toast.error('Failed to load board')
+      
+      if (isMountedRef.current && currentBoardIdRef.current === id) {
+        const currentBoard = useKanbanStore.getState().board
+        if (!currentBoard) {
+          actions.setError('Failed to load board')
+          toast.error('Failed to load board')
+        }
       }
     } finally {
-      store.setLoading(false)
-      store.setFetching(false)
+      if (isMountedRef.current && currentBoardIdRef.current === id) {
+        actions.setLoading(false)
+        actions.setFetching(false)
+      }
     }
-  }, [store])
+  }, [actions])
 
   useEffect(() => {
+    isMountedRef.current = true
+    currentBoardIdRef.current = boardId
+
     if (boardId) {
       fetchBoard(boardId)
     }
 
     return () => {
-      store.setBoard(null)
-      store.setLoading(false)
-      store.setFetching(false)
-      store.setError(null)
+      isMountedRef.current = false
     }
-  }, [boardId, fetchBoard])
+  }, [boardId]) 
 
   useEffect(() => {
     const handleFocus = () => {
-      if (boardId && store.board) {
+      const currentBoard = useKanbanStore.getState().board
+      if (boardId && currentBoard && isMountedRef.current) {
         fetchBoard(boardId, true)
       }
     }
 
     window.addEventListener('focus', handleFocus)
     return () => window.removeEventListener('focus', handleFocus)
-  }, [boardId, fetchBoard, store.board])
+  }, [boardId]) 
 
   const createColumn = useCallback(async (data: CreateColumnRequest) => {
     try {
       const response = await columnsApi.create(data)
-      store.addColumn({ ...response.data, tasks: [] })
+      actions.addColumn({ ...response.data, tasks: [] })
       toast.success('Column created')
-      store.closeColumnModal()
+      actions.closeColumnModal()
     } catch (error) {
       console.error('Failed to create column:', error)
       toast.error('Failed to create column')
     }
-  }, [store])
+  }, [actions])
 
   const updateColumn = useCallback(async (columnId: number, data: UpdateColumnRequest) => {
     try {
       await columnsApi.update(columnId, data)
-      store.updateColumn(columnId, data)
-      store.setEditingColumn(null)
+      actions.updateColumn(columnId, data)
+      actions.setEditingColumn(null)
       toast.success('Column updated')
     } catch (error) {
       console.error('Failed to update column:', error)
       toast.error('Failed to update column')
     }
-  }, [store])
+  }, [actions])
 
   const deleteColumn = useCallback(async (columnId: number) => {
     try {
       await columnsApi.delete(columnId)
-      store.removeColumn(columnId)
-      store.closeDeleteModal()
+      actions.removeColumn(columnId)
+      actions.closeDeleteModal()
       toast.success('Column deleted')
     } catch (error) {
       console.error('Failed to delete column:', error)
       toast.error('Failed to delete column')
     }
-  }, [store])
+  }, [actions])
 
   const reorderColumns = useCallback(async (columnIds: number[]) => {
-    const previousBoard = store.board
-    store.reorderColumns(columnIds)
+    const previousBoard = useKanbanStore.getState().board
+
+    actions.reorderColumns(columnIds)
 
     try {
       await columnsApi.reorder({ column_ids: columnIds })
@@ -115,51 +162,52 @@ export const useKanban = (boardId: number) => {
       toast.error('Failed to reorder columns')
 
       if (previousBoard) {
-        store.setBoard(previousBoard)
+        actions.setBoard(previousBoard)
         cacheService.set(CacheKeys.board(previousBoard.id), previousBoard)
       }
     }
-  }, [store])
+  }, [actions])
 
   const createTask = useCallback(async (data: CreateTaskRequest) => {
     try {
       const response = await tasksApi.create(data)
-      store.addTask(data.column, response.data)
+      actions.addTask(data.column, response.data)
       toast.success('Task created')
-      store.closeTaskModal()
+      actions.closeTaskModal()
     } catch (error) {
       console.error('Failed to create task:', error)
       toast.error('Failed to create task')
     }
-  }, [store])
+  }, [actions])
 
   const updateTask = useCallback(async (taskId: number, data: UpdateTaskRequest) => {
     try {
       const response = await tasksApi.update(taskId, data)
-      store.updateTask(taskId, response.data)
+      actions.updateTask(taskId, response.data)
       toast.success('Task updated')
-      store.closeTaskModal()
+      actions.closeTaskModal()
     } catch (error) {
       console.error('Failed to update task:', error)
       toast.error('Failed to update task')
     }
-  }, [store])
+  }, [actions])
 
   const deleteTask = useCallback(async (taskId: number) => {
     try {
       await tasksApi.delete(taskId)
-      store.removeTask(taskId)
-      store.closeDeleteModal()
+      actions.removeTask(taskId)
+      actions.closeDeleteModal()
       toast.success('Task deleted')
     } catch (error) {
       console.error('Failed to delete task:', error)
       toast.error('Failed to delete task')
     }
-  }, [store])
+  }, [actions])
 
   const moveTask = useCallback(async (taskId: number, data: MoveTaskRequest) => {
-    previousBoardRef.current = store.board
-    store.moveTask(taskId, data.column, data.position)
+    const previousBoard = useKanbanStore.getState().board
+
+    actions.moveTask(taskId, data.column, data.position)
 
     try {
       await tasksApi.move(taskId, data)
@@ -167,34 +215,33 @@ export const useKanban = (boardId: number) => {
       console.error('Failed to move task:', error)
       toast.error('Failed to move task')
 
-      if (previousBoardRef.current) {
-        store.setBoard(previousBoardRef.current)
-        cacheService.set(CacheKeys.board(previousBoardRef.current.id), previousBoardRef.current)
-        previousBoardRef.current = null
+      if (previousBoard) {
+        actions.setBoard(previousBoard)
+        cacheService.set(CacheKeys.board(previousBoard.id), previousBoard)
       }
     }
-  }, [store])
+  }, [actions])
 
   return {
-    board: store.board,
-    isLoading: store.isLoading,
-    isFetching: store.isFetching,
-    error: store.error,
+    board,
+    isLoading,
+    isFetching,
+    error,
 
-    selectedTask: store.selectedTask,
-    isTaskModalOpen: store.isTaskModalOpen,
-    isColumnModalOpen: store.isColumnModalOpen,
-    isDeleteModalOpen: store.isDeleteModalOpen,
-    deleteTarget: store.deleteTarget,
-    editingColumnId: store.editingColumnId,
+    selectedTask,
+    isTaskModalOpen,
+    isColumnModalOpen,
+    isDeleteModalOpen,
+    deleteTarget,
+    editingColumnId,
 
-    openTaskModal: store.openTaskModal,
-    closeTaskModal: store.closeTaskModal,
-    openColumnModal: store.openColumnModal,
-    closeColumnModal: store.closeColumnModal,
-    openDeleteModal: store.openDeleteModal,
-    closeDeleteModal: store.closeDeleteModal,
-    setEditingColumn: store.setEditingColumn,
+    openTaskModal: actions.openTaskModal,
+    closeTaskModal: actions.closeTaskModal,
+    openColumnModal: actions.openColumnModal,
+    closeColumnModal: actions.closeColumnModal,
+    openDeleteModal: actions.openDeleteModal,
+    closeDeleteModal: actions.closeDeleteModal,
+    setEditingColumn: actions.setEditingColumn,
 
     fetchBoard,
     createColumn,
