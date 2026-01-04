@@ -24,6 +24,7 @@ urlpatterns = [
     path('api/v1/auth/', include('accounts.urls')),
     path('api/v1/boards/', include('boards.urls')),
     path('api/v1/columns/', include('columns.urls')),
+    path('api/v1/tasks/', include('tasks.urls')),
 
 
     #API docs endpoints
