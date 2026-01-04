@@ -33,13 +33,24 @@ export const Column = ({
     data: { columnId: column.id },
   })
 
-  const handleNameSubmit = () => {
-    if (editName.trim() && editName.trim() !== column.name) {
-      onUpdateColumnName(editName.trim())
-    } else {
-      setEditName(column.name)
-    }
+const handleNameSubmit = () => {
+  const trimmedName = editName.trim()
+  
+  if (!trimmedName) {
+    setEditName(column.name)
+    onEditColumn()
+    return
   }
+
+  if (trimmedName === column.name) {
+    onEditColumn()
+    return
+  }
+
+  // Check for duplicate names in other columns
+  // We need to get board from parent or store
+  onUpdateColumnName(trimmedName)
+}
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
