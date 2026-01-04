@@ -10,7 +10,7 @@ from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiExample
 from drf_spectacular.types import OpenApiTypes
 from rest_framework import serializers as drf_serializers
 from .serializers import RegisterSerializer, UserSerializer
-from .utils import api_response
+from ..core.utils import api_response
 
 # Create your views here.
 
