@@ -52,9 +52,9 @@ export const Column = ({
 
   return (
     <div
-      className={`flex-shrink-0 w-72 bg-gray-100 rounded-lg flex flex-col max-h-full ${
-        isOver ? 'ring-2 ring-blue-400' : ''
-      }`}
+      className={`flex-shrink-0 w-72 bg-gray-100 rounded-lg flex flex-col max-h-full border-r-2 border-gray-300 last:border-r-0 ${
+    isOver ? 'ring-2 ring-blue-400' : ''
+    }`}
     >
       <div className="p-3 flex items-center justify-between">
         {isEditing ? (
