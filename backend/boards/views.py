@@ -25,6 +25,14 @@ from core.permissions import IsOwner
         tags=['Boards'],
         summary='Get board details',
         description='Get detailed information about a specific board including all columns and tasks.',
+        parameters=[
+            OpenApiParameter(
+                name='id',
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.PATH,
+                description='Board ID',
+            ),
+        ],
         responses={
             200: OpenApiResponse(description='Board details retrieved successfully'),
             404: OpenApiResponse(description='Board not found'),
@@ -51,6 +59,14 @@ from core.permissions import IsOwner
         tags=['Boards'],
         summary='Update board',
         description='Update board name and/or description.',
+        parameters=[
+            OpenApiParameter(
+                name='id',
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.PATH,
+                description='Board ID',
+            ),
+        ],
         responses={
             200: OpenApiResponse(description='Board updated successfully'),
             400: OpenApiResponse(description='Validation error'),
@@ -61,6 +77,14 @@ from core.permissions import IsOwner
         tags=['Boards'],
         summary='Partially update board',
         description='Partially update board fields.',
+        parameters=[
+            OpenApiParameter(
+                name='id',
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.PATH,
+                description='Board ID',
+            ),
+        ],
         responses={
             200: OpenApiResponse(description='Board updated successfully'),
             400: OpenApiResponse(description='Validation error'),
@@ -71,6 +95,14 @@ from core.permissions import IsOwner
         tags=['Boards'],
         summary='Delete board',
         description='Soft delete a board. The board can be recovered later.',
+        parameters=[
+            OpenApiParameter(
+                name='id',
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.PATH,
+                description='Board ID',
+            ),
+        ],
         responses={
             200: OpenApiResponse(description='Board deleted successfully'),
             404: OpenApiResponse(description='Board not found'),
@@ -80,6 +112,7 @@ from core.permissions import IsOwner
 class BoardViewSet(viewsets.ModelViewSet):
     serializer_class = BoardSerializer
     permission_classes = [IsAuthenticated, IsOwner]
+    lookup_field = 'pk'
 
     def get_queryset(self):
         return Board.objects.filter(
@@ -147,6 +180,14 @@ class BoardViewSet(viewsets.ModelViewSet):
         tags=['Boards'],
         summary='Duplicate board',
         description='Create a copy of an existing board including all columns and tasks.',
+        parameters=[
+            OpenApiParameter(
+                name='pk',
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.PATH,
+                description='Board ID to duplicate',
+            ),
+        ],
         responses={
             201: OpenApiResponse(description='Board duplicated successfully'),
             404: OpenApiResponse(description='Board not found'),
