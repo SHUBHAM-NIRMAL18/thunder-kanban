@@ -2,18 +2,18 @@ from django.shortcuts import render
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
+from django.conf import settings
 from drf_spectacular.utils import extend_schema, OpenApiResponse, OpenApiExample
 from drf_spectacular.types import OpenApiTypes
 from rest_framework import serializers as drf_serializers
 from .serializers import RegisterSerializer, UserSerializer
 from core.utils import api_response
-
-# Create your views here.
-
 
 User = get_user_model()
 
@@ -25,7 +25,6 @@ class LoginRequestSerializer(drf_serializers.Serializer):
 
 class TokenResponseSerializer(drf_serializers.Serializer):
     access = drf_serializers.CharField()
-    refresh = drf_serializers.CharField()
 
 
 class LoginResponseSerializer(drf_serializers.Serializer):
@@ -34,15 +33,17 @@ class LoginResponseSerializer(drf_serializers.Serializer):
 
 
 class RefreshRequestSerializer(drf_serializers.Serializer):
-    refresh = drf_serializers.CharField()
+    pass
 
 
 class LogoutRequestSerializer(drf_serializers.Serializer):
-    refresh = drf_serializers.CharField()
+    pass
 
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'auth_register'
 
     @extend_schema(
         tags=['Authentication'],
@@ -71,17 +72,27 @@ class RegisterView(APIView):
             user = serializer.save()
             refresh = RefreshToken.for_user(user)
             
-            return api_response(
+            response = api_response(
                 data={
                     'user': UserSerializer(user).data,
                     'tokens': {
                         'access': str(refresh.access_token),
-                        'refresh': str(refresh),
                     }
                 },
                 meta={'message': 'User registered successfully'},
                 status=status.HTTP_201_CREATED
             )
+            
+            response.set_cookie(
+                key='refresh_token',
+                value=str(refresh),
+                httponly=True,
+                secure=not settings.DEBUG,
+                samesite='Lax',
+                path='/api/v1/auth/',
+                max_age=7 * 24 * 60 * 60,  # 7 days
+            )
+            return response
         
         errors = []
         for field, messages in serializer.errors.items():
@@ -96,6 +107,8 @@ class RegisterView(APIView):
 
 class LoginView(TokenObtainPairView):
     permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'auth_login'
 
     @extend_schema(
         tags=['Authentication'],
@@ -103,6 +116,7 @@ class LoginView(TokenObtainPairView):
         responses={
             200: OpenApiResponse(description='Login successful'),
             401: OpenApiResponse(description='Invalid credentials'),
+            429: OpenApiResponse(description='Too many failed login attempts'),
         },
         examples=[
             OpenApiExample(
@@ -116,11 +130,29 @@ class LoginView(TokenObtainPairView):
         ]
     )
     def post(self, request, *args, **kwargs):
+        email = request.data.get('email')
+        if email:
+            cache_key = f"lockout:{email}"
+            failures = cache.get(cache_key, 0)
+            if failures >= 5:
+                return api_response(
+                    errors=[{
+                        'field': 'credentials',
+                        'detail': 'Account temporarily locked due to too many failed login attempts. Please try again in 15 minutes.'
+                    }],
+                    status=status.HTTP_429_TOO_MANY_REQUESTS
+                )
+
         serializer = self.get_serializer(data=request.data)
         
+        from rest_framework.exceptions import ValidationError, AuthenticationFailed
         try:
             serializer.is_valid(raise_exception=True)
-        except InvalidToken:
+        except (InvalidToken, ValidationError, AuthenticationFailed):
+            if email:
+                cache_key = f"lockout:{email}"
+                failures = cache.get(cache_key, 0)
+                cache.set(cache_key, failures + 1, timeout=900)  # 15 minutes lockout
             return api_response(
                 errors=[{'field': 'credentials', 'detail': 'Invalid email or password'}],
                 status=status.HTTP_401_UNAUTHORIZED
@@ -131,23 +163,41 @@ class LoginView(TokenObtainPairView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
+        if email:
+            cache.delete(f"lockout:{email}")
+            
         user = User.objects.get(email=request.data.get('email'))
+        access = serializer.validated_data['access']
+        refresh = serializer.validated_data['refresh']
         
-        return api_response(
+        response = api_response(
             data={
                 'user': UserSerializer(user).data,
                 'tokens': {
-                    'access': serializer.validated_data['access'],
-                    'refresh': serializer.validated_data['refresh'],
+                    'access': access,
                 }
             },
             meta={'message': 'Login successful'},
             status=status.HTTP_200_OK
         )
+        
+        response.set_cookie(
+            key='refresh_token',
+            value=refresh,
+            httponly=True,
+            secure=not settings.DEBUG,
+            samesite='Lax',
+            path='/api/v1/auth/',
+            max_age=7 * 24 * 60 * 60,  # 7 days
+        )
+        
+        return response
 
 
-class RefreshTokenView(TokenRefreshView):
+class RefreshTokenView(APIView):
     permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'auth_login'  # Share throttle scope with login
 
     @extend_schema(
         tags=['Authentication'],
@@ -155,38 +205,59 @@ class RefreshTokenView(TokenRefreshView):
         responses={
             200: OpenApiResponse(description='Token refreshed successfully'),
             401: OpenApiResponse(description='Invalid or expired token'),
-        },
-        examples=[
-            OpenApiExample(
-                'Refresh Token Example',
-                value={
-                    'refresh': 'eyJ0eXAiOiJKV1QiLCJhbGc...'
-                },
-                request_only=True,
-            ),
-        ]
+        }
     )
     def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        
-        try:
-            serializer.is_valid(raise_exception=True)
-        except TokenError as e:
+        refresh_token = request.COOKIES.get('refresh_token')
+        if not refresh_token:
             return api_response(
-                errors=[{'code': 'token_expired', 'detail': 'Refresh token is invalid or expired'}],
+                errors=[{'code': 'token_not_found', 'detail': 'Refresh token not found in cookies'}],
                 status=status.HTTP_401_UNAUTHORIZED
             )
         
-        return api_response(
+        try:
+            token = RefreshToken(refresh_token)
+            user_id = token['user_id']
+            user = User.objects.get(id=user_id)
+        except (TokenError, User.DoesNotExist):
+            response = api_response(
+                errors=[{'code': 'token_expired', 'detail': 'Refresh token is invalid or expired'}],
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+            response.delete_cookie('refresh_token', path='/api/v1/auth/')
+            return response
+        
+        # Blacklist old token
+        try:
+            token.blacklist()
+        except Exception:
+            pass
+        
+        # Issue new token pair
+        new_refresh = RefreshToken.for_user(user)
+        
+        response = api_response(
             data={
+                'user': UserSerializer(user).data,
                 'tokens': {
-                    'access': serializer.validated_data['access'],
-                    'refresh': serializer.validated_data.get('refresh', request.data.get('refresh')),
+                    'access': str(new_refresh.access_token),
                 }
             },
             meta={'message': 'Token refreshed successfully'},
             status=status.HTTP_200_OK
         )
+        
+        response.set_cookie(
+            key='refresh_token',
+            value=str(new_refresh),
+            httponly=True,
+            secure=not settings.DEBUG,
+            samesite='Lax',
+            path='/api/v1/auth/',
+            max_age=7 * 24 * 60 * 60,  # 7 days
+        )
+        
+        return response
 
 
 class LogoutView(APIView):
@@ -197,39 +268,25 @@ class LogoutView(APIView):
         request=LogoutRequestSerializer,
         responses={
             205: OpenApiResponse(description='Logout successful'),
-            400: OpenApiResponse(description='Invalid token'),
-        },
-        examples=[
-            OpenApiExample(
-                'Logout Example',
-                value={
-                    'refresh': 'eyJ0eXAiOiJKV1QiLCJhbGc...'
-                },
-                request_only=True,
-            ),
-        ]
+        }
     )
     def post(self, request):
-        try:
-            refresh_token = request.data.get('refresh')
-            if not refresh_token:
-                return api_response(
-                    errors=[{'field': 'refresh', 'detail': 'Refresh token is required'}],
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+        refresh_token = request.COOKIES.get('refresh_token')
+        
+        response = api_response(
+            meta={'message': 'Logout successful'},
+            status=status.HTTP_205_RESET_CONTENT
+        )
+        response.delete_cookie('refresh_token', path='/api/v1/auth/')
+        
+        if refresh_token:
+            try:
+                token = RefreshToken(refresh_token)
+                token.blacklist()
+            except Exception:
+                pass
             
-            token = RefreshToken(refresh_token)
-            token.blacklist()
-            
-            return api_response(
-                meta={'message': 'Logout successful'},
-                status=status.HTTP_205_RESET_CONTENT
-            )
-        except TokenError:
-            return api_response(
-                errors=[{'detail': 'Invalid token'}],
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        return response
 
 
 class MeView(APIView):
