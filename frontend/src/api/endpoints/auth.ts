@@ -19,10 +19,8 @@ export const authApi = {
     return response.data;
   },
 
-  logout: async (refreshToken: string) => {
-    const response = await api.post<ApiResponse>('/auth/logout/', {
-      refresh: refreshToken,
-    });
+  logout: async () => {
+    const response = await api.post<ApiResponse>('/auth/logout/');
     return response.data;
   },
 
@@ -31,10 +29,9 @@ export const authApi = {
     return response.data;
   },
 
-  refreshToken: async (refreshToken: string) => {
-    const response = await api.post<ApiResponse<{ tokens: { access: string; refresh: string } }>>(
-      '/auth/refresh/',
-      { refresh: refreshToken }
+  refreshToken: async () => {
+    const response = await api.post<ApiResponse<{ user: User; tokens: { access: string } }>>(
+      '/auth/refresh/'
     );
     return response.data;
   },
