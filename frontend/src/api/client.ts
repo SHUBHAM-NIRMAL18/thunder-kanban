@@ -2,12 +2,14 @@ import axios, { AxiosError } from 'axios';
 import type { InternalAxiosRequestConfig } from 'axios';
 import type { ApiResponse } from './types';
 import toast from 'react-hot-toast';
+import { useAuthStore } from '@/features/auth/store/authStore';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true,
 });
 
 let isRefreshing = false;
@@ -30,7 +32,7 @@ const processQueue = (error: AxiosError | null, token: string | null = null) => 
 
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = localStorage.getItem('access_token');
+    const token = useAuthStore.getState().accessToken;
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -67,24 +69,16 @@ api.interceptors.response.use(
       originalRequest._retry = true;
       isRefreshing = true;
 
-      const refreshToken = localStorage.getItem('refresh_token');
-
-      if (!refreshToken) {
-        localStorage.clear();
-        window.location.href = '/login';
-        return Promise.reject(error);
-      }
-
       try {
-        const response = await axios.post<ApiResponse<{ tokens: { access: string; refresh: string } }>>(
+        const response = await axios.post<ApiResponse<{ tokens: { access: string } }>>(
           `${import.meta.env.VITE_API_BASE_URL}/auth/refresh/`,
-          { refresh: refreshToken }
+          {},
+          { withCredentials: true }
         );
 
-        const { access, refresh } = response.data.data.tokens;
+        const { access } = response.data.data.tokens;
 
-        localStorage.setItem('access_token', access);
-        localStorage.setItem('refresh_token', refresh);
+        useAuthStore.getState().setAccessToken(access);
 
         if (originalRequest.headers) {
           originalRequest.headers.Authorization = `Bearer ${access}`;
@@ -96,7 +90,7 @@ api.interceptors.response.use(
       } catch (refreshError) {
         processQueue(refreshError as AxiosError, null);
         
-        localStorage.clear();
+        useAuthStore.getState().logout();
         
         const event = new CustomEvent('session-expired');
         window.dispatchEvent(event);
