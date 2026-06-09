@@ -20,7 +20,7 @@ export interface User {
 
 export interface AuthTokens {
   access: string;
-  refresh: string;
+  refresh?: string;
 }
 
 export interface LoginRequest {
