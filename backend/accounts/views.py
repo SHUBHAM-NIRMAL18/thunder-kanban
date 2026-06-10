@@ -197,7 +197,7 @@ class LoginView(TokenObtainPairView):
 class RefreshTokenView(APIView):
     permission_classes = [AllowAny]
     throttle_classes = [ScopedRateThrottle]
-    throttle_scope = 'auth_login'  # Share throttle scope with login
+    throttle_scope = 'auth_refresh'  # Separate from login — called silently on every page load
 
     @extend_schema(
         tags=['Authentication'],
