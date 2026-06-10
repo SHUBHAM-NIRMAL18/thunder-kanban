@@ -19,18 +19,10 @@ export const useLogin = () => {
       navigate('/dashboard')
     } catch (error: unknown) {
       console.error('Login error:', error)
-      
-      if (error && typeof error === 'object' && 'response' in error) {
-        const axiosError = error as { response?: { data?: { errors?: Array<{ detail: string }> } } }
-        const errors = axiosError.response?.data?.errors
-        if (errors && errors.length > 0) {
-          errors.forEach((err) => {
-            toast.error(err.detail)
-          })
-        } else {
-          toast.error('Invalid email or password.')
-        }
-      } else {
+      // Error toasting is handled by the global interceptor in client.ts
+      // Only show a fallback for non-axios / network errors
+      const isAxiosError = error && typeof error === 'object' && 'response' in error
+      if (!isAxiosError) {
         toast.error('Network error. Please check your connection.')
       }
     } finally {
@@ -39,4 +31,4 @@ export const useLogin = () => {
   }
 
   return { handleLogin, isLoading }
-}
+}
