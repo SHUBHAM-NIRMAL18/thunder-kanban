@@ -60,7 +60,20 @@ export const useAuthStore = create<AuthState>((set) => ({
         isAuthenticated: true, 
         isInitializing: false 
       })
-    } catch {
+    } catch (error: unknown) {
+      // If throttled (429), don't clear auth state — the session may still be valid.
+      // Just stop initializing and let the user proceed.
+      const isThrottled =
+        error &&
+        typeof error === 'object' &&
+        'response' in error &&
+        (error as { response?: { status?: number } }).response?.status === 429
+
+      if (isThrottled) {
+        set({ isInitializing: false })
+        return
+      }
+
       cacheService.clearAllCache()
       localStorage.removeItem('user')
       set({ 
@@ -71,4 +84,4 @@ export const useAuthStore = create<AuthState>((set) => ({
       })
     }
   },
-}))
+}))
