@@ -167,8 +167,9 @@ REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_RATES': {
         'anon': '100/day',
         'user': '1000/day',
-        'auth_login': '10/minute',
-        'auth_register': '5/minute',
+        'auth_login': '20/minute',
+        'auth_register': '10/minute',
+        'auth_refresh': '60/minute',  # Silent refresh on page load — needs high limit
     },
     'EXCEPTION_HANDLER': 'core.exceptions.custom_exception_handler',
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
