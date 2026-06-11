@@ -185,7 +185,7 @@ export const KanbanBoard = ({ boardId }: KanbanBoardProps) => {
   if (!board) return null
 
   return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ height: 'calc(100vh - 140px)', display: 'flex', flexDirection: 'column' }}>
       {/* Toolbar */}
       <div style={{
         display: 'flex',
@@ -268,8 +268,8 @@ export const KanbanBoard = ({ boardId }: KanbanBoardProps) => {
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
       >
-        <div className="kanban-scroll" style={{ flex: 1 }}>
-          <div style={{ display: 'flex', gap: 16, height: '100%', minHeight: 500, alignItems: 'flex-start' }}>
+        <div className="kanban-scroll" style={{ flex: 1, minHeight: 0 }}>
+          <div style={{ display: 'flex', gap: 16, height: '100%', alignItems: 'stretch' }}>
             {board.columns.map((column, index) => (
               <Column
                 key={column.id}
