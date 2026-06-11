@@ -1,8 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
-/* ═══════════════════════════════════════════════
+/* ==============================================
    DESIGN TOKENS
-═══════════════════════════════════════════════ */
+============================================== */
 :root {
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
 
@@ -38,6 +38,19 @@
   --card-c5: #ec4899;
   --card-c6: #f97316;
 
+  /* Priority dark tokens */
+  --priority-low-bg:    rgba(16, 185, 129, 0.12);
+  --priority-low-text:  #34d399;
+  --priority-low-bar:   #10b981;
+
+  --priority-med-bg:    rgba(245, 158, 11, 0.12);
+  --priority-med-text:  #fbbf24;
+  --priority-med-bar:   #f59e0b;
+
+  --priority-high-bg:   rgba(239, 68, 68, 0.12);
+  --priority-high-text: #f87171;
+  --priority-high-bar:  #ef4444;
+
   /* Shadows */
   --shadow-sm:   0 2px 8px rgba(0,0,0,0.4);
   --shadow-md:   0 8px 32px rgba(0,0,0,0.5);
@@ -50,9 +63,9 @@
   --radius-xl: 28px;
 }
 
-/* ═══════════════════════════════════════════════
+/* ==============================================
    RESET & BASE
-═══════════════════════════════════════════════ */
+============================================== */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html { scroll-behavior: smooth; }
@@ -72,9 +85,20 @@ a { text-decoration: none; color: inherit; }
 
 button { font-family: var(--font-sans); cursor: pointer; border: none; background: none; }
 
-/* ═══════════════════════════════════════════════
+/* ==============================================
+   DARK CUSTOM SCROLLBAR
+============================================== */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.12);
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.22); }
+
+/* ==============================================
    KEYFRAME ANIMATIONS
-═══════════════════════════════════════════════ */
+============================================== */
 @keyframes fadeIn {
   from { opacity: 0; }
   to   { opacity: 1; }
@@ -115,9 +139,34 @@ button { font-family: var(--font-sans); cursor: pointer; border: none; backgroun
   100% { background-position: 0% 50%; }
 }
 
-/* ═══════════════════════════════════════════════
-   GLASSMORPHISM UTILITY
-═══════════════════════════════════════════════ */
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(10px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.93); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(24px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes overlayIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes dragFloat {
+  0%, 100% { transform: rotate(2deg) scale(1.04); }
+  50%       { transform: rotate(3deg) scale(1.05); }
+}
+
+/* ==============================================
+   GLASSMORPHISM UTILITIES
+============================================== */
 .glass {
   background: rgba(255, 255, 255, 0.04);
   backdrop-filter: blur(20px);
@@ -132,9 +181,24 @@ button { font-family: var(--font-sans); cursor: pointer; border: none; backgroun
   border: 1px solid var(--border-medium);
 }
 
-/* ═══════════════════════════════════════════════
+.glass-card {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-subtle);
+  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+
+.glass-card:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: var(--border-medium);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(124,58,237,0.15);
+  transform: translateY(-2px);
+}
+
+/* ==============================================
    GRADIENT UTILITIES
-═══════════════════════════════════════════════ */
+============================================== */
 .gradient-text {
   background: linear-gradient(135deg, #a78bfa, #818cf8, #c084fc);
   background-size: 200% 200%;
@@ -148,9 +212,9 @@ button { font-family: var(--font-sans); cursor: pointer; border: none; backgroun
   background: linear-gradient(135deg, var(--accent), var(--accent-end));
 }
 
-/* ═══════════════════════════════════════════════
+/* ==============================================
    SKELETON SHIMMER
-═══════════════════════════════════════════════ */
+============================================== */
 .skeleton {
   background: linear-gradient(
     90deg,
@@ -163,3 +227,41 @@ button { font-family: var(--font-sans); cursor: pointer; border: none; backgroun
   border-radius: var(--radius-sm);
 }
 
+/* ==============================================
+   DARK FORM INPUTS
+============================================== */
+.dark-input {
+  width: 100%;
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  outline: none;
+  transition: border-color 0.18s, background 0.18s, box-shadow 0.18s;
+}
+
+.dark-input::placeholder { color: var(--text-muted); }
+
+.dark-input:focus {
+  border-color: var(--accent);
+  background: rgba(124,58,237,0.07);
+  box-shadow: 0 0 0 3px rgba(124,58,237,0.15);
+}
+
+/* ==============================================
+   KANBAN HORIZONTAL SCROLL
+============================================== */
+.kanban-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 16px;
+}
+
+.kanban-scroll::-webkit-scrollbar { height: 5px; }
+.kanban-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.1);
+  border-radius: 99px;
+}
