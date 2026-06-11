@@ -9,10 +9,28 @@ interface TaskCardProps {
   onClick?: () => void
 }
 
-const priorityColors = {
-  low: 'bg-green-100 text-green-800',
-  medium: 'bg-yellow-100 text-yellow-800',
-  high: 'bg-red-100 text-red-800',
+const PRIORITY_CONFIG = {
+  low: {
+    bar: '#10b981',
+    bg: 'rgba(16, 185, 129, 0.10)',
+    badgeBg: 'rgba(16, 185, 129, 0.15)',
+    badgeText: '#34d399',
+    label: 'Low',
+  },
+  medium: {
+    bar: '#f59e0b',
+    bg: 'rgba(245, 158, 11, 0.10)',
+    badgeBg: 'rgba(245, 158, 11, 0.15)',
+    badgeText: '#fbbf24',
+    label: 'Medium',
+  },
+  high: {
+    bar: '#ef4444',
+    bg: 'rgba(239, 68, 68, 0.10)',
+    badgeBg: 'rgba(239, 68, 68, 0.15)',
+    badgeText: '#f87171',
+    label: 'High',
+  },
 }
 
 export const TaskCard = ({ task, onEdit, onDelete, onClick }: TaskCardProps) => {
@@ -30,6 +48,8 @@ export const TaskCard = ({ task, onEdit, onDelete, onClick }: TaskCardProps) => 
     transition,
   }
 
+  const priority = PRIORITY_CONFIG[task.priority]
+
   const formatDate = (dateString: string | null) => {
     if (!dateString) return null
     const date = new Date(dateString)
@@ -37,81 +57,167 @@ export const TaskCard = ({ task, onEdit, onDelete, onClick }: TaskCardProps) => 
   }
 
   const handleCardClick = (e: React.MouseEvent) => {
-    if ((e.target as HTMLElement).closest('button')) {
-      return
-    }
+    if ((e.target as HTMLElement).closest('button')) return
     onClick?.()
   }
 
   return (
     <div
       ref={setNodeRef}
-      style={style}
+      style={{
+        ...style,
+        opacity: isDragging ? 0.35 : 1,
+        position: 'relative',
+        borderRadius: 12,
+        background: isDragging ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.045)',
+        border: `1px solid rgba(255,255,255,${isDragging ? '0.05' : '0.09'})`,
+        overflow: 'hidden',
+        cursor: 'grab',
+        transition: isDragging ? undefined : 'border-color 0.18s, box-shadow 0.18s, background 0.18s, transform 0.15s',
+        userSelect: 'none',
+      }}
+      className="task-card"
       {...attributes}
       {...listeners}
       onClick={handleCardClick}
-      className={`bg-white rounded-lg border border-gray-200 p-3 shadow-sm hover:shadow-md transition-all cursor-grab active:cursor-grabbing group ${
-        isDragging ? 'opacity-50 shadow-lg rotate-2' : ''
-      } ${onClick ? 'hover:border-blue-300' : ''}`}
+      onMouseEnter={e => {
+        if (isDragging) return
+        const el = e.currentTarget
+        el.style.background = 'rgba(255,255,255,0.07)'
+        el.style.borderColor = 'rgba(255,255,255,0.16)'
+        el.style.boxShadow = `0 6px 24px rgba(0,0,0,0.35), 0 0 0 1px ${priority.bar}30`
+        el.style.transform = 'translateY(-2px)'
+      }}
+      onMouseLeave={e => {
+        if (isDragging) return
+        const el = e.currentTarget
+        el.style.background = 'rgba(255,255,255,0.045)'
+        el.style.borderColor = 'rgba(255,255,255,0.09)'
+        el.style.boxShadow = 'none'
+        el.style.transform = 'none'
+      }}
     >
-      <div className="flex items-start justify-between gap-2">
-        <h4 className="text-sm font-medium text-gray-900 flex-1 group-hover:text-blue-600 transition-colors">
-          {task.title}
-        </h4>
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              onEdit()
-            }}
-            className="p-1 rounded hover:bg-gray-100 text-gray-500 hover:text-gray-700"
-            title="Edit task"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-            </svg>
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              onDelete()
-            }}
-            className="p-1 rounded hover:bg-red-100 text-gray-500 hover:text-red-600"
-            title="Delete task"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-            </svg>
-          </button>
+      {/* Priority left bar */}
+      <div style={{
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        bottom: 0,
+        width: 3,
+        background: priority.bar,
+        borderRadius: '12px 0 0 12px',
+      }} />
+
+      {/* Card content */}
+      <div style={{ padding: '10px 12px 10px 16px' }}>
+        {/* Title row */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+          <h4 style={{
+            fontSize: '0.85rem',
+            fontWeight: 600,
+            color: 'var(--text-primary)',
+            lineHeight: 1.4,
+            flex: 1,
+            letterSpacing: '-0.01em',
+          }}>
+            {task.title}
+          </h4>
+
+          {/* Action buttons — always visible but subtle */}
+          <div style={{ display: 'flex', gap: 2, flexShrink: 0 }} className="task-actions">
+            <button
+              onClick={(e) => { e.stopPropagation(); onEdit() }}
+              title="Edit task"
+              style={{
+                padding: 4,
+                borderRadius: 6,
+                color: 'var(--text-muted)',
+                display: 'flex',
+                alignItems: 'center',
+                transition: 'background 0.15s, color 0.15s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)' }}
+            >
+              <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+              </svg>
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); onDelete() }}
+              title="Delete task"
+              style={{
+                padding: 4,
+                borderRadius: 6,
+                color: 'var(--text-muted)',
+                display: 'flex',
+                alignItems: 'center',
+                transition: 'background 0.15s, color 0.15s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'var(--danger-soft)'; e.currentTarget.style.color = 'var(--danger)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)' }}
+            >
+              <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
+          </div>
         </div>
-      </div>
 
-      {task.description && (
-        <p className="text-xs text-gray-500 mt-2 line-clamp-2">{task.description}</p>
-      )}
-
-      <div className="flex items-center gap-2 mt-3 flex-wrap">
-        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${priorityColors[task.priority]}`}>
-          {task.priority}
-        </span>
-
-        {task.due_date && (
-          <span className={`text-xs px-2 py-0.5 rounded-full font-medium flex items-center gap-1 ${
-            task.is_overdue ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-600'
-          }`}>
-            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            {formatDate(task.due_date)}
-          </span>
+        {/* Description snippet */}
+        {task.description && (
+          <p style={{
+            fontSize: '0.76rem',
+            color: 'var(--text-muted)',
+            marginTop: 5,
+            lineHeight: 1.45,
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+          }}>
+            {task.description}
+          </p>
         )}
-      </div>
 
-      {onClick && (
-        <div className="mt-2 pt-2 border-t border-gray-100 opacity-0 group-hover:opacity-100 transition-opacity">
-          <span className="text-xs text-gray-400">Click to view details</span>
+        {/* Footer chips */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 10, flexWrap: 'wrap' }}>
+          {/* Priority badge */}
+          <span style={{
+            fontSize: '0.7rem',
+            fontWeight: 600,
+            padding: '2px 8px',
+            borderRadius: 99,
+            background: priority.badgeBg,
+            color: priority.badgeText,
+            letterSpacing: '0.01em',
+            textTransform: 'uppercase',
+          }}>
+            {priority.label}
+          </span>
+
+          {/* Due date */}
+          {task.due_date && (
+            <span style={{
+              fontSize: '0.7rem',
+              fontWeight: 500,
+              padding: '2px 8px',
+              borderRadius: 99,
+              background: task.is_overdue ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.06)',
+              color: task.is_overdue ? '#f87171' : 'var(--text-muted)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
+            }}>
+              <svg width="10" height="10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              {formatDate(task.due_date)}
+              {task.is_overdue && ' ⚠'}
+            </span>
+          )}
         </div>
-      )}
+      </div>
     </div>
   )
 }
