@@ -59,37 +59,23 @@ export const KanbanBoard = ({ boardId }: KanbanBoardProps) => {
   const [previewTask, setPreviewTask] = useState<Task | null>(null)
 
   const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   )
 
   const handleDragStart = useCallback(
     (event: DragStartEvent) => {
-      const { active } = event
-      const taskId = active.id as number
-
+      const taskId = event.active.id as number
       if (!board) return
-
       for (const column of board.columns) {
         const task = column.tasks.find((t) => t.id === taskId)
-        if (task) {
-          setActiveTask(task)
-          break
-        }
+        if (task) { setActiveTask(task); break }
       }
     },
     [board]
   )
 
-  const handleDragOver = useCallback((_event: DragOverEvent) => {
-    // Handle drag over for visual feedback if needed
-  }, [])
+  const handleDragOver = useCallback((_event: DragOverEvent) => {}, [])
 
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
@@ -110,11 +96,7 @@ export const KanbanBoard = ({ boardId }: KanbanBoardProps) => {
         const overTaskId = over.id as number
         for (const column of board.columns) {
           const taskIndex = column.tasks.findIndex((t) => t.id === overTaskId)
-          if (taskIndex !== -1) {
-            targetColumnId = column.id
-            newPosition = taskIndex
-            break
-          }
+          if (taskIndex !== -1) { targetColumnId = column.id; newPosition = taskIndex; break }
         }
       }
 
@@ -122,10 +104,7 @@ export const KanbanBoard = ({ boardId }: KanbanBoardProps) => {
 
       let sourceColumnId: number | null = null
       for (const column of board.columns) {
-        if (column.tasks.some((t) => t.id === taskId)) {
-          sourceColumnId = column.id
-          break
-        }
+        if (column.tasks.some((t) => t.id === taskId)) { sourceColumnId = column.id; break }
       }
 
       if (sourceColumnId === null) return
@@ -155,10 +134,7 @@ export const KanbanBoard = ({ boardId }: KanbanBoardProps) => {
     if (selectedTask) {
       await updateTask(selectedTask.id, data)
     } else if (addingToColumnId) {
-      await createTask({
-        column: addingToColumnId,
-        ...data,
-      })
+      await createTask({ column: addingToColumnId, ...data })
     }
     setAddingToColumnId(null)
   }
@@ -170,34 +146,34 @@ export const KanbanBoard = ({ boardId }: KanbanBoardProps) => {
 
   const handleDeleteConfirm = async () => {
     if (!deleteTarget) return
-
-    if (deleteTarget.type === 'task') {
-      await deleteTask(deleteTarget.id)
-    } else if (deleteTarget.type === 'column') {
-      await deleteColumn(deleteTarget.id)
-    }
+    if (deleteTarget.type === 'task') await deleteTask(deleteTarget.id)
+    else if (deleteTarget.type === 'column') await deleteColumn(deleteTarget.id)
   }
 
-  const handleTaskClick = (task: Task) => {
-    setPreviewTask(task)
-  }
+  const handleTaskClick = (task: Task) => setPreviewTask(task)
 
-  if (isLoading && !board) {
-    return <BoardSkeleton />
-  }
+  if (isLoading && !board) return <BoardSkeleton />
 
   if (error && !board) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <div className="text-center">
-          <span className="text-6xl mb-4 block">❌</span>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
-            Failed to load board
-          </h3>
-          <p className="text-gray-500 mb-4">{error}</p>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+        <div style={{ textAlign: 'center', animation: 'scaleIn 0.3s ease' }}>
+          <div style={{ fontSize: '3rem', marginBottom: 16 }}>❌</div>
+          <h3 style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>Failed to load board</h3>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 20 }}>{error}</p>
           <button
             onClick={() => window.location.reload()}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+            style={{
+              padding: '9px 20px',
+              borderRadius: 40,
+              background: 'linear-gradient(135deg, var(--accent), var(--accent-end))',
+              color: '#fff',
+              fontWeight: 600,
+              fontSize: '0.85rem',
+              cursor: 'pointer',
+              border: 'none',
+              fontFamily: 'var(--font-sans)',
+            }}
           >
             Retry
           </button>
@@ -209,37 +185,38 @@ export const KanbanBoard = ({ boardId }: KanbanBoardProps) => {
   if (!board) return null
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex items-center justify-between mb-4 flex-shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="text-sm text-gray-500">
-            {board.columns.length} column{board.columns.length !== 1 ? 's' : ''} •{' '}
-            {board.columns.reduce((acc, col) => acc + col.tasks.length, 0)} task
-            {board.columns.reduce((acc, col) => acc + col.tasks.length, 0) !== 1 ? 's' : ''}
-          </div>
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      {/* Toolbar */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 20,
+        flexShrink: 0,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <span style={{
+            fontSize: '0.78rem',
+            color: 'var(--text-muted)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+          }}>
+            <span style={{ padding: '3px 10px', borderRadius: 20, background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-subtle)' }}>
+              {board.columns.length} column{board.columns.length !== 1 ? 's' : ''}
+            </span>
+            <span style={{ padding: '3px 10px', borderRadius: 20, background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-subtle)' }}>
+              {board.columns.reduce((acc, col) => acc + col.tasks.length, 0)} task{board.columns.reduce((acc, col) => acc + col.tasks.length, 0) !== 1 ? 's' : ''}
+            </span>
+          </span>
 
           {isFetching && (
-            <div className="flex items-center gap-1 text-xs text-gray-400">
-              <svg
-                className="w-3 h-3 animate-spin"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+              <svg style={{ animation: 'spin 0.8s linear infinite' }} width="12" height="12" fill="none" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" style={{ opacity: 0.2 }} />
+                <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" style={{ opacity: 0.7 }} />
               </svg>
-              <span>Syncing...</span>
+              Syncing…
             </div>
           )}
         </div>
@@ -247,16 +224,43 @@ export const KanbanBoard = ({ boardId }: KanbanBoardProps) => {
         <button
           onClick={openColumnModal}
           disabled={board.columns.length >= 10}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 7,
+            padding: '8px 18px',
+            borderRadius: 40,
+            background: 'linear-gradient(135deg, var(--accent), var(--accent-end))',
+            color: '#fff',
+            fontWeight: 600,
+            fontSize: '0.82rem',
+            cursor: board.columns.length >= 10 ? 'not-allowed' : 'pointer',
+            border: 'none',
+            fontFamily: 'var(--font-sans)',
+            opacity: board.columns.length >= 10 ? 0.5 : 1,
+            boxShadow: '0 4px 16px rgba(124,58,237,0.3)',
+            transition: 'all 0.2s ease',
+          }}
+          onMouseEnter={e => {
+            if (board.columns.length < 10) {
+              e.currentTarget.style.transform = 'translateY(-1px)'
+              e.currentTarget.style.boxShadow = '0 6px 24px rgba(124,58,237,0.45)'
+            }
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.transform = 'none'
+            e.currentTarget.style.boxShadow = '0 4px 16px rgba(124,58,237,0.3)'
+          }}
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
           </svg>
           Add Column
-          {board.columns.length >= 10 && <span className="text-xs text-gray-400">(Max 10)</span>}
+          {board.columns.length >= 10 && <span style={{ opacity: 0.7, fontSize: '0.72rem' }}>(Max 10)</span>}
         </button>
       </div>
 
+      {/* Board area */}
       <DndContext
         sensors={sensors}
         collisionDetection={closestCorners}
@@ -264,41 +268,80 @@ export const KanbanBoard = ({ boardId }: KanbanBoardProps) => {
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
       >
-        <div className="flex-1 overflow-x-auto">
-          <div className="flex gap-0 h-full min-h-[500px]">
+        <div className="kanban-scroll" style={{ flex: 1 }}>
+          <div style={{ display: 'flex', gap: 16, height: '100%', minHeight: 500, alignItems: 'flex-start' }}>
             {board.columns.map((column, index) => (
-              <div
+              <Column
                 key={column.id}
-                className={`flex-shrink-0 ${
-                  index !== board.columns.length - 1 ? 'border-r-2 border-gray-300' : ''
-                }`}
-              >
-                <Column
-                  column={column}
-                  isEditing={editingColumnId === column.id}
-                  onEditColumn={() => setEditingColumn(column.id)}
-                  onDeleteColumn={() => openDeleteModal('column', column.id, column.name)}
-                  onUpdateColumnName={(name) => updateColumn(column.id, { name })}
-                  onAddTask={() => handleAddTask(column.id)}
-                  onEditTask={(task) => openTaskModal(task)}
-                  onDeleteTask={(task) => openDeleteModal('task', task.id, task.title)}
-                  onTaskClick={handleTaskClick}
-                />
-              </div>
+                column={column}
+                colorIndex={index}
+                isEditing={editingColumnId === column.id}
+                onEditColumn={() => setEditingColumn(column.id)}
+                onDeleteColumn={() => openDeleteModal('column', column.id, column.name)}
+                onUpdateColumnName={(name) => updateColumn(column.id, { name })}
+                onAddTask={() => handleAddTask(column.id)}
+                onEditTask={(task) => openTaskModal(task)}
+                onDeleteTask={(task) => openDeleteModal('task', task.id, task.title)}
+                onTaskClick={handleTaskClick}
+              />
             ))}
 
+            {/* Empty board state */}
             {board.columns.length === 0 && (
-              <div className="flex-1 flex items-center justify-center">
-                <div className="text-center">
-                  <span className="text-6xl mb-4 block">📋</span>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No columns yet</h3>
-                  <p className="text-gray-500 mb-4">Add your first column to get started</p>
+              <div style={{
+                flex: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                animation: 'fadeIn 0.4s ease',
+              }}>
+                <div style={{
+                  textAlign: 'center',
+                  padding: '64px 32px',
+                  borderRadius: 20,
+                  background: 'rgba(255,255,255,0.03)',
+                  border: '1.5px dashed rgba(124,58,237,0.3)',
+                  maxWidth: 380,
+                }}>
+                  <div style={{
+                    width: 72,
+                    height: 72,
+                    borderRadius: '50%',
+                    background: 'rgba(124,58,237,0.1)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    margin: '0 auto 20px',
+                    animation: 'float 3s ease-in-out infinite',
+                  }}>
+                    <span style={{ fontSize: '2rem' }}>📋</span>
+                  </div>
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8 }}>
+                    No columns yet
+                  </h3>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 24 }}>
+                    Add your first column to start organizing tasks
+                  </p>
                   <button
                     onClick={openColumnModal}
-                    className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 7,
+                      padding: '10px 22px',
+                      borderRadius: 40,
+                      background: 'linear-gradient(135deg, var(--accent), var(--accent-end))',
+                      color: '#fff',
+                      fontWeight: 600,
+                      fontSize: '0.85rem',
+                      cursor: 'pointer',
+                      border: 'none',
+                      fontFamily: 'var(--font-sans)',
+                      boxShadow: '0 4px 20px rgba(124,58,237,0.35)',
+                    }}
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
                     </svg>
                     Add Column
                   </button>
@@ -310,19 +353,21 @@ export const KanbanBoard = ({ boardId }: KanbanBoardProps) => {
 
         <DragOverlay>
           {activeTask ? (
-            <div className="rotate-3">
+            <div style={{
+              transform: 'rotate(3deg) scale(1.04)',
+              filter: 'drop-shadow(0 16px 40px rgba(0,0,0,0.5))',
+              animation: 'dragFloat 0.5s ease infinite',
+            }}>
               <TaskCard task={activeTask} onEdit={() => {}} onDelete={() => {}} onClick={() => {}} />
             </div>
           ) : null}
         </DragOverlay>
       </DndContext>
 
+      {/* Modals */}
       <TaskModal
         isOpen={isTaskModalOpen}
-        onClose={() => {
-          closeTaskModal()
-          setAddingToColumnId(null)
-        }}
+        onClose={() => { closeTaskModal(); setAddingToColumnId(null) }}
         onSubmit={handleTaskSubmit}
         task={selectedTask}
         columnId={addingToColumnId || 0}
@@ -335,16 +380,10 @@ export const KanbanBoard = ({ boardId }: KanbanBoardProps) => {
         onClose={() => setPreviewTask(null)}
         task={previewTask}
         onEdit={() => {
-          if (previewTask) {
-            openTaskModal(previewTask)
-            setPreviewTask(null)
-          }
+          if (previewTask) { openTaskModal(previewTask); setPreviewTask(null) }
         }}
         onDelete={() => {
-          if (previewTask) {
-            openDeleteModal('task', previewTask.id, previewTask.title)
-            setPreviewTask(null)
-          }
+          if (previewTask) { openDeleteModal('task', previewTask.id, previewTask.title); setPreviewTask(null) }
         }}
       />
 
@@ -353,9 +392,7 @@ export const KanbanBoard = ({ boardId }: KanbanBoardProps) => {
         onClose={closeDeleteModal}
         onConfirm={handleDeleteConfirm}
         title={`Delete ${deleteTarget?.type === 'task' ? 'Task' : 'Column'}`}
-        description={`Are you sure you want to delete "${deleteTarget?.name}"? ${
-          deleteTarget?.type === 'column' ? 'All tasks in this column will be deleted.' : ''
-        }`}
+        description={`Are you sure you want to delete "${deleteTarget?.name}"? ${deleteTarget?.type === 'column' ? 'All tasks in this column will be deleted.' : ''}`}
         confirmText="Delete"
         cancelText="Cancel"
         variant="danger"
