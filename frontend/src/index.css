@@ -258,6 +258,7 @@ button { font-family: var(--font-sans); cursor: pointer; border: none; backgroun
   overflow-x: auto;
   overflow-y: hidden;
   padding-bottom: 16px;
+  height: 100%;
 }
 
 .kanban-scroll::-webkit-scrollbar { height: 5px; }
