@@ -78,7 +78,8 @@ export const Column = ({
         flexShrink: 0,
         display: 'flex',
         flexDirection: 'column',
-        maxHeight: '100%',
+        height: '100%',
+        minHeight: 0,
         background: 'rgba(255,255,255,0.03)',
         border: `1px solid ${isOver ? accentColor + '60' : 'rgba(255,255,255,0.08)'}`,
         borderRadius: 16,
@@ -238,12 +239,12 @@ export const Column = ({
         ref={setNodeRef}
         style={{
           flex: 1,
+          minHeight: 0,
           overflowY: 'auto',
           padding: '0 10px',
           display: 'flex',
           flexDirection: 'column',
           gap: 8,
-          minHeight: 80,
         }}
       >
         <SortableContext items={column.tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
