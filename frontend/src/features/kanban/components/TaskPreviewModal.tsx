@@ -1,4 +1,3 @@
-import { Button } from '@/components/ui/button'
 import type { Task } from '@/api/endpoints/boards'
 
 interface TaskPreviewModalProps {
@@ -9,117 +8,222 @@ interface TaskPreviewModalProps {
   onDelete: () => void
 }
 
-const priorityColors = {
-  low: 'bg-green-100 text-green-800',
-  medium: 'bg-yellow-100 text-yellow-800',
-  high: 'bg-red-100 text-red-800',
+const PRIORITY_CONFIG = {
+  low:    { color: '#34d399', bg: 'rgba(16,185,129,0.12)',  bar: '#10b981', label: 'Low'    },
+  medium: { color: '#fbbf24', bg: 'rgba(245,158,11,0.12)', bar: '#f59e0b', label: 'Medium' },
+  high:   { color: '#f87171', bg: 'rgba(239,68,68,0.12)',  bar: '#ef4444', label: 'High'   },
 }
 
-export const TaskPreviewModal = ({
-  isOpen,
-  onClose,
-  task,
-  onEdit,
-  onDelete,
-}: TaskPreviewModalProps) => {
+export const TaskPreviewModal = ({ isOpen, onClose, task, onEdit, onDelete }: TaskPreviewModalProps) => {
   if (!isOpen || !task) return null
+
+  const priority = PRIORITY_CONFIG[task.priority]
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
-    return date.toLocaleDateString('en-US', {
-      weekday: 'short',
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    })
+    return date.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="fixed inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative z-50 w-full max-w-lg bg-white rounded-lg shadow-lg overflow-hidden">
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1">
-              <h2 className="text-xl font-semibold text-gray-900">{task.title}</h2>
-              <p className="text-sm text-gray-500 mt-1">in {task.column_name}</p>
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 50,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: 16,
+    }}>
+      {/* Backdrop */}
+      <div
+        onClick={onClose}
+        style={{
+          position: 'fixed', inset: 0,
+          background: 'rgba(0,0,0,0.72)',
+          backdropFilter: 'blur(6px)',
+          animation: 'overlayIn 0.2s ease',
+        }}
+      />
+
+      {/* Modal panel */}
+      <div style={{
+        position: 'relative', zIndex: 51,
+        width: '100%', maxWidth: 500,
+        background: 'rgba(12,11,22,0.97)',
+        border: '1px solid rgba(255,255,255,0.12)',
+        borderRadius: 20,
+        boxShadow: '0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(124,58,237,0.08)',
+        animation: 'modalIn 0.25s ease',
+        overflow: 'hidden',
+      }}>
+        {/* Priority accent bar at top */}
+        <div style={{ height: 3, background: priority.bar }} />
+
+        {/* Header */}
+        <div style={{
+          padding: '20px 22px 16px',
+          borderBottom: '1px solid rgba(255,255,255,0.07)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+            <div style={{ flex: 1 }}>
+              <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.35, letterSpacing: '-0.01em' }}>
+                {task.title}
+              </h2>
+              <p style={{ fontSize: '0.76rem', color: 'var(--text-muted)', marginTop: 4, display: 'flex', alignItems: 'center', gap: 5 }}>
+                <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ opacity: 0.6 }}>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                </svg>
+                in {task.column_name}
+              </p>
             </div>
             <button
               onClick={onClose}
-              className="p-1 rounded hover:bg-gray-100 text-gray-500"
+              style={{
+                padding: 6, borderRadius: 8, flexShrink: 0,
+                color: 'var(--text-muted)',
+                display: 'flex', alignItems: 'center',
+                transition: 'background 0.15s, color 0.15s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)' }}
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
         </div>
 
-        <div className="p-6 space-y-6">
-          <div className="flex items-center gap-4">
+        {/* Body */}
+        <div style={{ padding: '18px 22px', display: 'flex', flexDirection: 'column', gap: 18 }}>
+          {/* Meta row */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            {/* Priority badge */}
             <div>
-              <span className="text-xs text-gray-500 block mb-1">Priority</span>
-              <span className={`text-sm px-3 py-1 rounded-full font-medium ${priorityColors[task.priority]}`}>
-                {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+              <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: 5, fontWeight: 500, letterSpacing: '0.04em', textTransform: 'uppercase' }}>Priority</p>
+              <span style={{
+                fontSize: '0.78rem', fontWeight: 700,
+                padding: '4px 12px', borderRadius: 99,
+                background: priority.bg, color: priority.color,
+                display: 'flex', alignItems: 'center', gap: 6,
+              }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: priority.color, flexShrink: 0 }} />
+                {priority.label}
               </span>
             </div>
 
+            {/* Due date */}
             {task.due_date && (
               <div>
-                <span className="text-xs text-gray-500 block mb-1">Due Date</span>
-                <span className={`text-sm px-3 py-1 rounded-full font-medium flex items-center gap-1 ${
-                  task.is_overdue ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-700'
-                }`}>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: 5, fontWeight: 500, letterSpacing: '0.04em', textTransform: 'uppercase' }}>Due Date</p>
+                <span style={{
+                  fontSize: '0.78rem', fontWeight: 600,
+                  padding: '4px 12px', borderRadius: 99,
+                  background: task.is_overdue ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.06)',
+                  color: task.is_overdue ? '#f87171' : 'var(--text-secondary)',
+                  display: 'flex', alignItems: 'center', gap: 6,
+                }}>
+                  <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                   {formatDate(task.due_date)}
-                  {task.is_overdue && ' (Overdue)'}
+                  {task.is_overdue && <span style={{ background: '#ef444430', borderRadius: 4, padding: '1px 5px', fontSize: '0.68rem' }}>Overdue</span>}
                 </span>
               </div>
             )}
           </div>
 
+          {/* Description */}
           <div>
-            <span className="text-xs text-gray-500 block mb-2">Description</span>
+            <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: 8, fontWeight: 500, letterSpacing: '0.04em', textTransform: 'uppercase' }}>Description</p>
             {task.description ? (
-              <div className="bg-gray-50 rounded-lg p-4 text-sm text-gray-700 whitespace-pre-wrap">
+              <div style={{
+                background: 'rgba(255,255,255,0.04)',
+                border: '1px solid rgba(255,255,255,0.07)',
+                borderRadius: 10,
+                padding: '12px 14px',
+                fontSize: '0.85rem',
+                color: 'var(--text-secondary)',
+                lineHeight: 1.6,
+                whiteSpace: 'pre-wrap',
+              }}>
                 {task.description}
               </div>
             ) : (
-              <p className="text-sm text-gray-400 italic">No description provided</p>
+              <p style={{ fontSize: '0.83rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>No description provided.</p>
             )}
           </div>
 
-          <div className="flex items-center gap-6 text-xs text-gray-500 pt-4 border-t border-gray-100">
-            <div>
-              <span className="block">Created</span>
-              <span className="text-gray-700">{formatDate(task.created_at)}</span>
-            </div>
-            <div>
-              <span className="block">Updated</span>
-              <span className="text-gray-700">{formatDate(task.updated_at)}</span>
-            </div>
+          {/* Timestamps */}
+          <div style={{
+            display: 'flex',
+            gap: 20,
+            paddingTop: 14,
+            borderTop: '1px solid rgba(255,255,255,0.06)',
+          }}>
+            {[
+              { label: 'Created', value: formatDate(task.created_at) },
+              { label: 'Updated', value: formatDate(task.updated_at) },
+            ].map(({ label, value }) => (
+              <div key={label}>
+                <p style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 500 }}>{label}</p>
+                <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 500 }}>{value}</p>
+              </div>
+            ))}
           </div>
         </div>
 
-        <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
-          <Button 
-            variant="outline" 
-            onClick={onDelete} 
-            className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+        {/* Footer actions */}
+        <div style={{
+          padding: '12px 22px 18px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          borderTop: '1px solid rgba(255,255,255,0.07)',
+          gap: 10,
+        }}>
+          <button
+            onClick={onDelete}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '8px 16px',
+              borderRadius: 40,
+              border: '1px solid rgba(239,68,68,0.3)',
+              background: 'rgba(239,68,68,0.07)',
+              color: 'var(--danger)',
+              fontSize: '0.82rem', fontWeight: 600,
+              cursor: 'pointer',
+              fontFamily: 'var(--font-sans)',
+              transition: 'all 0.15s ease',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.14)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.5)' }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.07)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.3)' }}
           >
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
             </svg>
             Delete
-          </Button>
-          <Button onClick={onEdit}>
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          </button>
+
+          <button
+            onClick={onEdit}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '8px 20px',
+              borderRadius: 40,
+              background: 'linear-gradient(135deg, var(--accent), var(--accent-end))',
+              color: '#fff',
+              fontSize: '0.82rem', fontWeight: 600,
+              cursor: 'pointer',
+              border: 'none',
+              fontFamily: 'var(--font-sans)',
+              boxShadow: '0 4px 16px rgba(124,58,237,0.35)',
+              transition: 'all 0.2s ease',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 24px rgba(124,58,237,0.5)' }}
+            onMouseLeave={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(124,58,237,0.35)' }}
+          >
+            <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
             </svg>
             Edit Task
-          </Button>
+          </button>
         </div>
       </div>
     </div>
