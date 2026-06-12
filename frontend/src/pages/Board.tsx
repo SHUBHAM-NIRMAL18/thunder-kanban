@@ -4,7 +4,6 @@ import { useKanban } from '@/features/kanban/hooks/useKanban'
 import { KanbanBoard } from '@/features/kanban/components/KanbanBoard'
 import { BoardSkeleton } from '@/features/kanban/components/BoardSkeleton'
 import { CollaborationModal } from '@/features/boards/components/CollaborationModal'
-import { useAuth } from '@/features/auth/hooks/useAuth'
 import { useKanbanStore } from '@/features/kanban/store/kanbanStore'
 
 const ErrorState = ({ message, onBack }: { message: string; onBack: () => void }) => (

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Share2, Copy, Check, Search, UserPlus, X, Trash2, LogOut, RefreshCw } from 'lucide-react'
 import toast from 'react-hot-toast'
-import { boardsApi, type Board } from '@/api/endpoints/boards'
+import { boardsApi, type BoardDetail } from '@/api/endpoints/boards'
 import { authApi } from '@/api/endpoints/auth'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import type { User } from '@/api/types'
@@ -9,8 +9,8 @@ import type { User } from '@/api/types'
 interface CollaborationModalProps {
   isOpen: boolean
   onClose: () => void
-  board: Board
-  onUpdate: (updatedBoard: Board) => void
+  board: BoardDetail
+  onUpdate: (updatedBoard: BoardDetail) => void
 }
 
 export const CollaborationModal = ({ isOpen, onClose, board, onUpdate }: CollaborationModalProps) => {
