@@ -3,14 +3,19 @@ from rest_framework import viewsets, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from django.db import transaction
+from django.db.models import Q
+from django.contrib.auth import get_user_model
+import secrets
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter, OpenApiResponse, OpenApiExample
 from drf_spectacular.types import OpenApiTypes
 from .models import Board
 from .serializers import BoardSerializer, BoardDetailSerializer, BoardCreateSerializer
 from core.utils import api_response
-from core.permissions import IsOwner
+from core.permissions import IsOwner, IsOwnerOrMember
 
 # Create your views here.
+
+User = get_user_model()
 
 @extend_schema_view(
     list=extend_schema(
@@ -109,18 +114,26 @@ from core.permissions import IsOwner
         }
     ),
 )
+
+
 class BoardViewSet(viewsets.ModelViewSet):
     serializer_class = BoardSerializer
-    permission_classes = [IsAuthenticated, IsOwner]
+    permission_classes = [IsAuthenticated, IsOwnerOrMember]
     lookup_field = 'pk'
+
+    def get_permissions(self):
+        if self.action in ['join_board']:
+            return [IsAuthenticated()]
+        return super().get_permissions()
 
     def get_queryset(self):
         if getattr(self, 'swagger_fake_view', False) or not self.request.user.is_authenticated:
             return Board.objects.none()
     
         return Board.objects.filter(
-            owner=self.request.user,
-            is_archived=False).prefetch_related('columns__tasks')
+            Q(owner=self.request.user) | Q(members=self.request.user),
+            is_archived=False
+        ).distinct().prefetch_related('columns__tasks')
 
     def get_serializer_class(self):
         if self.action == 'retrieve':
@@ -161,6 +174,11 @@ class BoardViewSet(viewsets.ModelViewSet):
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
+        if instance.owner != request.user:
+            return api_response(
+                errors=[{"detail": "Only the board owner can rename or update board settings."}],
+                status=status.HTTP_403_FORBIDDEN
+            )
         serializer = BoardSerializer(instance, data=request.data, partial=partial, context={'request': request})
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
@@ -171,11 +189,134 @@ class BoardViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
+        if instance.owner != request.user:
+            return api_response(
+                errors=[{"detail": "Only the board owner can delete the board."}],
+                status=status.HTTP_403_FORBIDDEN
+            )
         instance.is_archived = True
         instance.save()
         return api_response(
             meta={"message": "Board deleted successfully"},
             status=status.HTTP_200_OK
+        )
+
+    @action(detail=False, methods=['post'], url_path='join/(?P<token>[^/.]+)')
+    def join_board(self, request, token=None):
+        try:
+            board = Board.objects.get(invite_token=token, is_archived=False)
+        except Board.DoesNotExist:
+            return api_response(
+                errors=[{"detail": "Invalid or expired invite link."}],
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        if board.owner == request.user:
+            return api_response(
+                data=BoardDetailSerializer(board).data,
+                meta={"message": "You are the owner of this board."}
+            )
+            
+        if board.members.filter(id=request.user.id).exists():
+            return api_response(
+                data=BoardDetailSerializer(board).data,
+                meta={"message": "You are already a member of this board."}
+            )
+            
+        board.members.add(request.user)
+        return api_response(
+            data=BoardDetailSerializer(board).data,
+            meta={"message": "Successfully joined the board!"},
+            status=status.HTTP_200_OK
+        )
+
+    @action(detail=True, methods=['post'], url_path='members')
+    def add_member(self, request, pk=None):
+        board = self.get_object()
+        if board.owner != request.user:
+            return api_response(
+                errors=[{"detail": "Only the board owner can add members."}],
+                status=status.HTTP_403_FORBIDDEN
+            )
+            
+        email = request.data.get('email', '').strip()
+        if not email:
+            return api_response(
+                errors=[{"field": "email", "detail": "Email is required."}],
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        try:
+            user_to_add = User.objects.get(email__iexact=email)
+        except User.DoesNotExist:
+            return api_response(
+                errors=[{"field": "email", "detail": "User with this email not found in system."}],
+                status=status.HTTP_404_NOT_FOUND
+            )
+            
+        if board.owner == user_to_add:
+            return api_response(
+                errors=[{"detail": "User is the owner of this board."}],
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        if board.members.filter(id=user_to_add.id).exists():
+            return api_response(
+                errors=[{"detail": "User is already a member of this board."}],
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        board.members.add(user_to_add)
+        return api_response(
+            data=UserSerializer(user_to_add).data,
+            meta={"message": f"Added {user_to_add.first_name} {user_to_add.last_name} to the board."}
+        )
+
+    @action(detail=True, methods=['delete'], url_path='members/(?P<user_id>[^/.]+)')
+    def remove_member(self, request, pk=None, user_id=None):
+        board = self.get_object()
+        
+        try:
+            user_to_remove = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return api_response(
+                errors=[{"detail": "User not found."}],
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        is_owner = (board.owner == request.user)
+        is_self = (str(request.user.id) == str(user_id))
+        
+        if not (is_owner or is_self):
+            return api_response(
+                errors=[{"detail": "You don't have permission to remove this member."}],
+                status=status.HTTP_403_FORBIDDEN
+            )
+            
+        if not board.members.filter(id=user_to_remove.id).exists():
+            return api_response(
+                errors=[{"detail": "User is not a member of this board."}],
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        board.members.remove(user_to_remove)
+        return api_response(
+            meta={"message": "Member removed successfully."}
+        )
+
+    @action(detail=True, methods=['post'], url_path='reset-invite')
+    def reset_invite(self, request, pk=None):
+        board = self.get_object()
+        if board.owner != request.user:
+            return api_response(
+                errors=[{"detail": "Only the board owner can reset the invite link."}],
+                status=status.HTTP_403_FORBIDDEN
+            )
+        board.invite_token = secrets.token_urlsafe(16)
+        board.save()
+        return api_response(
+            data=BoardSerializer(board).data,
+            meta={"message": "Invite link has been reset successfully."}
         )
 
     @extend_schema(
