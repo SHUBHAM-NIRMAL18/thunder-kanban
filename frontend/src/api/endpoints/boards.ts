@@ -1,6 +1,13 @@
 import api from '../client'
 import type { ApiResponse } from '../types'
 
+export interface Member {
+  id: number
+  email: string
+  first_name: string
+  last_name: string
+}
+
 export interface Board {
   id: number
   name: string
@@ -8,6 +15,8 @@ export interface Board {
   is_archived: boolean
   owner: string
   owner_name: string
+  members: Member[]
+  invite_token: string
   columns_count: number
   tasks_count: number
   created_at: string
@@ -85,6 +94,26 @@ export const boardsApi = {
 
   duplicate: async (id: number) => {
     const response = await api.post<ApiResponse<BoardDetail>>(`/boards/${id}/duplicate/`)
+    return response.data
+  },
+
+  join: async (token: string) => {
+    const response = await api.post<ApiResponse<BoardDetail>>(`/boards/join/${token}/`)
+    return response.data
+  },
+
+  addMember: async (boardId: number, email: string) => {
+    const response = await api.post<ApiResponse<Member>>(`/boards/${boardId}/members/`, { email })
+    return response.data
+  },
+
+  removeMember: async (boardId: number, userId: number) => {
+    const response = await api.delete<ApiResponse>(`/boards/${boardId}/members/${userId}/`)
+    return response.data
+  },
+
+  resetInvite: async (boardId: number) => {
+    const response = await api.post<ApiResponse<Board>>(`/boards/${boardId}/reset-invite/`)
     return response.data
   },
 }
