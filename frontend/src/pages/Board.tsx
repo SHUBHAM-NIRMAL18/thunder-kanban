@@ -1,7 +1,11 @@
+import { useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useKanban } from '@/features/kanban/hooks/useKanban'
 import { KanbanBoard } from '@/features/kanban/components/KanbanBoard'
 import { BoardSkeleton } from '@/features/kanban/components/BoardSkeleton'
+import { CollaborationModal } from '@/features/boards/components/CollaborationModal'
+import { useAuth } from '@/features/auth/hooks/useAuth'
+import { useKanbanStore } from '@/features/kanban/store/kanbanStore'
 
 const ErrorState = ({ message, onBack }: { message: string; onBack: () => void }) => (
   <div style={{ minHeight: '100vh', background: 'var(--bg-base)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -24,6 +28,8 @@ export const Board = () => {
   const boardId = id ? parseInt(id) : 0
 
   const { board, isLoading, isFetching, error } = useKanban(boardId)
+  const [isCollabOpen, setIsCollabOpen] = useState(false)
+  const setBoard = useKanbanStore((state) => state.setBoardWithCache)
 
   if (!id || isNaN(boardId) || boardId <= 0) {
     return <ErrorState message="Invalid board ID" onBack={() => navigate('/dashboard')} />
@@ -63,6 +69,11 @@ export const Board = () => {
 
   const totalTasks = board.columns.reduce((acc, col) => acc + col.tasks.length, 0)
 
+  const allMembers = [
+    { name: board.owner_name || board.owner, email: board.owner, isOwner: true },
+    ...(board.members || []).map(m => ({ name: `${m.first_name} ${m.last_name}`.trim() || m.email, email: m.email, isOwner: false }))
+  ]
+
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-base)', display: 'flex', flexDirection: 'column' }}>
       <nav style={navStyle} className="glass">
@@ -89,7 +100,46 @@ export const Board = () => {
             </div>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
+            {/* Collaborators Stack */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={avatarsGroup} onClick={() => setIsCollabOpen(true)} title="View collaborators">
+                {allMembers.slice(0, 3).map((m, idx) => (
+                  <div
+                    key={idx}
+                    style={{
+                      ...avatarCircle,
+                      zIndex: 10 - idx,
+                      background: m.isOwner 
+                        ? 'linear-gradient(135deg, #fbbf24, #f59e0b)' 
+                        : 'linear-gradient(135deg, var(--accent), var(--accent-end))',
+                    }}
+                    title={`${m.name} (${m.isOwner ? 'Owner' : 'Collaborator'})`}
+                  >
+                    {m.name[0].toUpperCase()}
+                  </div>
+                ))}
+                {allMembers.length > 3 && (
+                  <div style={{ ...avatarCircle, zIndex: 0, background: 'rgba(255,255,255,0.08)', fontSize: '0.7rem' }}>
+                    +{allMembers.length - 3}
+                  </div>
+                )}
+              </div>
+
+              <button
+                onClick={() => setIsCollabOpen(true)}
+                style={collabBtn}
+                className="hover:scale-102 hover:border-violet-500/50 transition-all duration-200"
+              >
+                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ marginRight: 4 }}>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                </svg>
+                Share
+              </button>
+            </div>
+
+            <div style={navDivider} />
+
             <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 6 }}>
               <span style={{ padding: '3px 9px', borderRadius: 20, background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border-subtle)' }}>
                 {board.columns.length} columns
@@ -105,6 +155,13 @@ export const Board = () => {
       <main style={{ flex: 1, overflow: 'hidden', padding: '12px 16px 16px' }}>
         <KanbanBoard boardId={board.id} />
       </main>
+
+      <CollaborationModal
+        isOpen={isCollabOpen}
+        onClose={() => setIsCollabOpen(false)}
+        board={board}
+        onUpdate={setBoard}
+      />
     </div>
   )
 }
@@ -131,4 +188,40 @@ const backLink: React.CSSProperties = {
 
 const navDivider: React.CSSProperties = {
   width: 1, height: 18, background: 'var(--border-subtle)',
-}
+}
+
+const avatarsGroup: React.CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  cursor: 'pointer',
+}
+
+const avatarCircle: React.CSSProperties = {
+  width: 28,
+  height: 28,
+  borderRadius: '50%',
+  color: '#fff',
+  fontSize: '0.75rem',
+  fontWeight: 700,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  border: '2px solid #07070f',
+  marginRight: -6,
+  boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
+}
+
+const collabBtn: React.CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  padding: '6px 12px',
+  borderRadius: 8,
+  border: '1px solid var(--border-subtle)',
+  background: 'rgba(255,255,255,0.04)',
+  color: 'var(--text-secondary)',
+  fontSize: '0.78rem',
+  fontWeight: 600,
+  cursor: 'pointer',
+  fontFamily: 'var(--font-sans)',
+}
+
