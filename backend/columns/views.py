@@ -13,8 +13,9 @@ from .serializers import (
     ColumnUpdateSerializer,
     ColumnReorderSerializer
 )
+from django.db.models import Q
 from core.utils import api_response
-from core.permissions import IsOwner
+from core.permissions import IsOwner, IsOwnerOrMember
 
 # Create your views here.
 
@@ -128,7 +129,7 @@ from core.permissions import IsOwner
 )
 class ColumnViewSet(viewsets.ModelViewSet):
     serializer_class = ColumnSerializer
-    permission_classes = [IsAuthenticated, IsOwner]
+    permission_classes = [IsAuthenticated, IsOwnerOrMember]
     lookup_field = 'pk'
 
     def get_queryset(self):
@@ -137,9 +138,9 @@ class ColumnViewSet(viewsets.ModelViewSet):
             return Column.objects.none()
     
         queryset = Column.objects.filter(
-            board__owner=self.request.user,
+            Q(board__owner=self.request.user) | Q(board__members=self.request.user),
             board__is_archived=False
-        ).prefetch_related('tasks').select_related('board')
+        ).distinct().prefetch_related('tasks').select_related('board')
         
         board_id = self.request.query_params.get('board')
         if board_id:
@@ -246,9 +247,9 @@ class ColumnViewSet(viewsets.ModelViewSet):
         column_ids = serializer.validated_data['column_ids']
         
         columns = Column.objects.filter(
-            id__in=column_ids,
-            board__owner=request.user
-        )
+            Q(board__owner=request.user) | Q(board__members=request.user),
+            id__in=column_ids
+        ).distinct()
         
         if columns.count() != len(column_ids):
             return api_response(
