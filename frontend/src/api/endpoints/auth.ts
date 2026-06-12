@@ -35,4 +35,9 @@ export const authApi = {
     );
     return response.data;
   },
+
+  searchUsers: async (query: string) => {
+    const response = await api.get<ApiResponse<User[]>>(`/auth/users/search/?q=${encodeURIComponent(query)}`);
+    return response.data;
+  },
 };
