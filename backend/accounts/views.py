@@ -305,3 +305,30 @@ class MeView(APIView):
             data=serializer.data,
             status=status.HTTP_200_OK
         )
+
+
+class UserSearchView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        tags=['User'],
+        summary='Search users by email or name',
+        description='Search users by query string. Returns matching users excluding the current user.',
+        responses={
+            200: UserSerializer(many=True),
+        }
+    )
+    def get(self, request):
+        from django.db.models import Q
+        query = request.query_params.get('q', '').strip()
+        if not query or len(query) < 2:
+            return api_response(data=[])
+            
+        users = User.objects.filter(
+            Q(email__icontains=query) |
+            Q(first_name__icontains=query) |
+            Q(last_name__icontains=query)
+        ).exclude(id=request.user.id)[:10]
+        
+        serializer = UserSerializer(users, many=True)
+        return api_response(data=serializer.data)
