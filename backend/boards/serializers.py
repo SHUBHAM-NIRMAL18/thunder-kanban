@@ -1,12 +1,14 @@
 from rest_framework import serializers
 from drf_spectacular.utils import extend_schema_field
 from drf_spectacular.types import OpenApiTypes
+from accounts.serializers import UserSerializer
 from .models import Board
 
 
 class BoardSerializer(serializers.ModelSerializer):
     owner = serializers.ReadOnlyField(source='owner.email')
     owner_name = serializers.SerializerMethodField()
+    members = UserSerializer(many=True, read_only=True)
     columns_count = serializers.SerializerMethodField()
     tasks_count = serializers.SerializerMethodField()
 
@@ -19,12 +21,14 @@ class BoardSerializer(serializers.ModelSerializer):
             'is_archived',
             'owner',
             'owner_name',
+            'members',
+            'invite_token',
             'columns_count',
             'tasks_count',
             'created_at',
             'updated_at',
         ]
-        read_only_fields = ['id', 'owner', 'is_archived', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'owner', 'members', 'invite_token', 'is_archived', 'created_at', 'updated_at']
 
     @extend_schema_field(OpenApiTypes.STR)
     def get_owner_name(self, obj) -> str:
