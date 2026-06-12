@@ -4,6 +4,7 @@ import { Login } from '@/pages/Login'
 import { Register } from '@/pages/Register'
 import { Dashboard } from '@/pages/Dashboard'
 import { Board } from '@/pages/Board'
+import { JoinBoard } from '@/pages/JoinBoard'
 import { ProtectedRoute } from './ProtectedRoute'
 
 export const router = createBrowserRouter([
@@ -32,6 +33,14 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <Board />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/join/:token',
+    element: (
+      <ProtectedRoute>
+        <JoinBoard />
       </ProtectedRoute>
     ),
   },
