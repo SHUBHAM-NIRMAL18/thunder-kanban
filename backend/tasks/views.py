@@ -14,9 +14,10 @@ from .serializers import (
     TaskReorderSerializer,
     TaskBulkMoveSerializer
 )
+from django.db.models import Q
 from columns.models import Column
 from core.utils import api_response
-from core.permissions import IsOwner
+from core.permissions import IsOwner, IsOwnerOrMember
 # Create your views here.
 
 @extend_schema_view(
@@ -149,7 +150,7 @@ from core.permissions import IsOwner
 )
 class TaskViewSet(viewsets.ModelViewSet):
     serializer_class = TaskSerializer
-    permission_classes = [IsAuthenticated, IsOwner]
+    permission_classes = [IsAuthenticated, IsOwnerOrMember]
     lookup_field = 'pk'
 
     def get_queryset(self):
@@ -158,10 +159,10 @@ class TaskViewSet(viewsets.ModelViewSet):
             return Task.objects.none()
     
         queryset = Task.objects.filter(
-            column__board__owner=self.request.user,
+            Q(column__board__owner=self.request.user) | Q(column__board__members=self.request.user),
             column__board__is_archived=False,
             is_archived=False
-        ).select_related('column', 'column__board')
+        ).distinct().select_related('column', 'column__board')
     
         column_id = self.request.query_params.get('column')
         if column_id:
@@ -286,8 +287,8 @@ class TaskViewSet(viewsets.ModelViewSet):
         
         try:
             target_column = Column.objects.get(
+                Q(board__owner=request.user) | Q(board__members=request.user),
                 id=target_column_id,
-                board__owner=request.user,
                 board__is_archived=False
             )
         except Column.DoesNotExist:
@@ -375,10 +376,10 @@ class TaskViewSet(viewsets.ModelViewSet):
         task_ids = serializer.validated_data['task_ids']
         
         tasks = Task.objects.filter(
+            Q(column__board__owner=request.user) | Q(column__board__members=request.user),
             id__in=task_ids,
-            column__board__owner=request.user,
             is_archived=False
-        )
+        ).distinct()
         
         if tasks.count() != len(task_ids):
             return api_response(
@@ -429,8 +430,8 @@ class TaskViewSet(viewsets.ModelViewSet):
         
         try:
             target_column = Column.objects.get(
+                Q(board__owner=request.user) | Q(board__members=request.user),
                 id=target_column_id,
-                board__owner=request.user,
                 board__is_archived=False
             )
         except Column.DoesNotExist:
@@ -440,10 +441,10 @@ class TaskViewSet(viewsets.ModelViewSet):
             )
         
         tasks = Task.objects.filter(
+            Q(column__board__owner=request.user) | Q(column__board__members=request.user),
             id__in=task_ids,
-            column__board__owner=request.user,
             is_archived=False
-        )
+        ).distinct()
         
         if tasks.count() != len(task_ids):
             return api_response(
