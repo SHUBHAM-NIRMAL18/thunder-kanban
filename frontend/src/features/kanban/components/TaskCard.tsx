@@ -216,6 +216,30 @@ export const TaskCard = ({ task, onEdit, onDelete, onClick }: TaskCardProps) => 
               {task.is_overdue && ' ⚠'}
             </span>
           )}
+
+          {/* Assignee Avatar */}
+          {task.assignee && (
+            <div 
+              style={{ 
+                marginLeft: 'auto', 
+                width: 18, 
+                height: 18, 
+                borderRadius: '50%', 
+                background: 'linear-gradient(135deg, var(--accent), var(--accent-end))', 
+                color: '#fff', 
+                fontSize: '0.62rem', 
+                fontWeight: 700, 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                flexShrink: 0,
+              }}
+              title={`Assigned to ${task.assignee.first_name} ${task.assignee.last_name}`}
+            >
+              {((task.assignee.first_name?.[0] ?? '') + (task.assignee.last_name?.[0] ?? '')).toUpperCase() || task.assignee.email[0].toUpperCase()}
+            </div>
+          )}
         </div>
       </div>
     </div>
