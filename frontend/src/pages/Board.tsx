@@ -5,6 +5,7 @@ import { KanbanBoard } from '@/features/kanban/components/KanbanBoard'
 import { BoardSkeleton } from '@/features/kanban/components/BoardSkeleton'
 import { CollaborationModal } from '@/features/boards/components/CollaborationModal'
 import { useKanbanStore } from '@/features/kanban/store/kanbanStore'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 
 const ErrorState = ({ message, onBack }: { message: string; onBack: () => void }) => (
   <div style={{ minHeight: '100vh', background: 'var(--bg-base)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -22,16 +23,18 @@ const ErrorState = ({ message, onBack }: { message: string; onBack: () => void }
 )
 
 export const Board = () => {
-  const { id } = useParams<{ id: string }>()
+  const { slug } = useParams<{ slug: string }>()
   const navigate = useNavigate()
-  const boardId = id ? parseInt(id) : 0
+  const { user } = useAuth()
 
-  const { board, isLoading, isFetching, error } = useKanban(boardId)
+  const { board, isLoading, isFetching, error, updateBoard } = useKanban(slug || '')
   const [isCollabOpen, setIsCollabOpen] = useState(false)
+  const [isEditingName, setIsEditingName] = useState(false)
+  const [editName, setEditName] = useState('')
   const setBoard = useKanbanStore((state) => state.setBoardWithCache)
 
-  if (!id || isNaN(boardId) || boardId <= 0) {
-    return <ErrorState message="Invalid board ID" onBack={() => navigate('/dashboard')} />
+  if (!slug) {
+    return <ErrorState message="Invalid board URL" onBack={() => navigate('/dashboard')} />
   }
 
   if (isLoading && !board) {
@@ -66,12 +69,37 @@ export const Board = () => {
     return <ErrorState message="Board not found" onBack={() => navigate('/dashboard')} />
   }
 
+  const isOwner = user?.email === board.owner
   const totalTasks = board.columns.reduce((acc, col) => acc + col.tasks.length, 0)
 
   const allMembers = [
     { name: board.owner_name || board.owner, email: board.owner, isOwner: true },
     ...(board.members || []).map(m => ({ name: `${m.first_name} ${m.last_name}`.trim() || m.email, email: m.email, isOwner: false }))
   ]
+
+  const startEditing = () => {
+    if (board) {
+      setEditName(board.name)
+      setIsEditingName(true)
+    }
+  }
+
+  const handleSaveName = async () => {
+    const trimmed = editName.trim()
+    if (!trimmed || trimmed === board.name) {
+      setIsEditingName(false)
+      return
+    }
+    try {
+      const updated = await updateBoard({ name: trimmed })
+      if (updated?.slug) {
+        navigate(`/boards/${updated.slug}`, { replace: true })
+      }
+      setIsEditingName(false)
+    } catch (err) {
+      // updateBoard handles errors via toasts
+    }
+  }
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-base)', display: 'flex', flexDirection: 'column' }}>
@@ -87,9 +115,47 @@ export const Board = () => {
             <div style={navDivider} />
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ fontSize: '1.1rem' }}>⚡</span>
-              <h1 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
-                {board.name}
-              </h1>
+              {isEditingName ? (
+                <input
+                  type="text"
+                  value={editName}
+                  onChange={e => setEditName(e.target.value)}
+                  onBlur={handleSaveName}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') handleSaveName()
+                    if (e.key === 'Escape') setIsEditingName(false)
+                  }}
+                  autoFocus
+                  style={renameInputStyle}
+                />
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <h1 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
+                    {board.name}
+                  </h1>
+                  {isOwner && (
+                    <button
+                      onClick={startEditing}
+                      onMouseEnter={e => {
+                        e.currentTarget.style.color = 'var(--text-primary)'
+                        e.currentTarget.style.opacity = '1'
+                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.color = 'var(--text-muted)'
+                        e.currentTarget.style.opacity = '0.6'
+                        e.currentTarget.style.background = 'transparent'
+                      }}
+                      style={editBtnStyle}
+                      title="Rename board"
+                    >
+                      <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+              )}
               {isFetching && (
                 <svg style={{ animation: 'spin 0.8s linear infinite' }} width="14" height="14" fill="none" viewBox="0 0 24 24">
                   <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" style={{ color: 'var(--text-muted)', opacity: 0.25 }} />
@@ -152,7 +218,7 @@ export const Board = () => {
       </nav>
 
       <main style={{ flex: 1, overflow: 'hidden', padding: '12px 16px 16px' }}>
-        <KanbanBoard boardId={board.id} />
+        <KanbanBoard boardSlug={board.slug} />
       </main>
 
       <CollaborationModal
@@ -163,6 +229,33 @@ export const Board = () => {
       />
     </div>
   )
+}
+
+const renameInputStyle: React.CSSProperties = {
+  fontSize: '0.95rem',
+  fontWeight: 700,
+  color: 'var(--text-primary)',
+  background: 'rgba(255,255,255,0.06)',
+  border: '1px solid var(--border-subtle)',
+  borderRadius: 6,
+  padding: '2px 8px',
+  outline: 'none',
+  fontFamily: 'var(--font-sans)',
+  width: '180px',
+}
+
+const editBtnStyle: React.CSSProperties = {
+  background: 'transparent',
+  border: 'none',
+  color: 'var(--text-muted)',
+  cursor: 'pointer',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: 4,
+  borderRadius: 4,
+  transition: 'all 0.15s',
+  opacity: 0.6,
 }
 
 const navStyle: React.CSSProperties = {
