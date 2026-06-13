@@ -7,6 +7,7 @@ from .models import Board
 
 class BoardSerializer(serializers.ModelSerializer):
     owner = serializers.ReadOnlyField(source='owner.email')
+    owner_id = serializers.ReadOnlyField(source='owner.id')
     owner_name = serializers.SerializerMethodField()
     members = UserSerializer(many=True, read_only=True)
     columns_count = serializers.SerializerMethodField()
@@ -20,6 +21,7 @@ class BoardSerializer(serializers.ModelSerializer):
             'description',
             'is_archived',
             'owner',
+            'owner_id',
             'owner_name',
             'members',
             'invite_token',
