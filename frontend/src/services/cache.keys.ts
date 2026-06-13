@@ -1,4 +1,4 @@
 export const CacheKeys = {
-  board: (boardId: number) => `board_${boardId}`,
+  board: (boardIdOrSlug: number | string) => `board_${boardIdOrSlug}`,
   boardList: () => 'board_list',
 } as const
