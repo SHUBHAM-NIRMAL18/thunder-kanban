@@ -16,7 +16,7 @@ export const Dashboard = () => {
   const [isLoggingOut, setIsLoggingOut]         = useState(false)
   const [showCreateModal, setShowCreateModal]   = useState(false)
   const [showDeleteModal, setShowDeleteModal]   = useState(false)
-  const [boardToDelete, setBoardToDelete]       = useState<{ id: number; name: string } | null>(null)
+  const [boardToDelete, setBoardToDelete]       = useState<{ slug: string; name: string } | null>(null)
   const [showUserMenu, setShowUserMenu]         = useState(false)
   const [mounted, setMounted]                   = useState(false)
 
@@ -46,17 +46,17 @@ export const Dashboard = () => {
 
   const handleCreateBoard = async (data: { name: string; description: string }) => {
     const board = await createBoard(data)
-    navigate(`/boards/${board.id}`)
+    navigate(`/boards/${board.slug}`)
   }
 
-  const handleDeleteClick = (id: number, name: string) => {
-    setBoardToDelete({ id, name })
+  const handleDeleteClick = (slug: string, name: string) => {
+    setBoardToDelete({ slug, name })
     setShowDeleteModal(true)
   }
 
   const handleDeleteConfirm = async () => {
     if (!boardToDelete) return
-    await deleteBoard(boardToDelete.id)
+    await deleteBoard(boardToDelete.slug)
     setShowDeleteModal(false)
     setBoardToDelete(null)
   }
@@ -240,13 +240,14 @@ export const Dashboard = () => {
               >
                 <BoardCard
                   id={board.id}
+                  slug={board.slug}
                   name={board.name}
                   description={board.description}
                   columnsCount={board.columns_count}
                   tasksCount={board.tasks_count}
                   colorIndex={idx % 6}
-                  onDuplicate={() => duplicateBoard(board.id)}
-                  onDelete={() => handleDeleteClick(board.id, board.name)}
+                  onDuplicate={() => duplicateBoard(board.slug)}
+                  onDelete={() => handleDeleteClick(board.slug, board.name)}
                 />
               </div>
             ))}
