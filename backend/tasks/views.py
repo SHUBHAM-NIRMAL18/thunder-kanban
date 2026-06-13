@@ -5,14 +5,15 @@ from rest_framework.decorators import action
 from django.db import transaction, models
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter, OpenApiResponse, OpenApiExample
 from drf_spectacular.types import OpenApiTypes
-from .models import Task
+from .models import Task, TaskNote
 from .serializers import (
     TaskSerializer,
     TaskCreateSerializer,
     TaskUpdateSerializer,
     TaskMoveSerializer,
     TaskReorderSerializer,
-    TaskBulkMoveSerializer
+    TaskBulkMoveSerializer,
+    TaskNoteSerializer
 )
 from django.db.models import Q
 from columns.models import Column
@@ -474,3 +475,42 @@ class TaskViewSet(viewsets.ModelViewSet):
         return api_response(
             meta={"message": f"{len(task_ids)} tasks moved successfully"}
         )
+
+    @action(detail=True, methods=['post', 'get'], url_path='notes')
+    def notes(self, request, pk=None):
+        task = self.get_object()
+        if request.method == 'GET':
+            notes = task.notes.all()
+            serializer = TaskNoteSerializer(notes, many=True, context={'request': request})
+            return api_response(data=serializer.data)
+        
+        # POST
+        serializer = TaskNoteSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        note = serializer.save(task=task, author=request.user)
+        return api_response(
+            data=TaskNoteSerializer(note, context={'request': request}).data,
+            meta={"message": "Note added successfully"},
+            status=status.HTTP_201_CREATED
+        )
+
+    @action(detail=True, methods=['delete'], url_path='notes/(?P<note_id>[^/.]+)')
+    def delete_note(self, request, pk=None, note_id=None):
+        task = self.get_object()
+        try:
+            note = task.notes.get(id=note_id)
+        except TaskNote.DoesNotExist:
+            return api_response(
+                errors=[{"detail": "Note not found."}],
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Check if user is the author of the note or the owner of the board
+        if note.author != request.user and task.column.board.owner != request.user:
+            return api_response(
+                errors=[{"detail": "You don't have permission to delete this note."}],
+                status=status.HTTP_403_FORBIDDEN
+            )
+            
+        note.delete()
+        return api_response(meta={"message": "Note deleted successfully"})
