@@ -10,7 +10,7 @@ import type { CreateTaskRequest, UpdateTaskRequest, MoveTaskRequest } from '@/ap
 import type { CreateColumnRequest, UpdateColumnRequest } from '@/api/endpoints/columns'
 import type { BoardDetail } from '@/api/endpoints/boards'
 
-export const useKanban = (boardId: number) => {
+export const useKanban = (slug: string) => {
   const board = useKanbanStore((state) => state.board)
   const isLoading = useKanbanStore((state) => state.isLoading)
   const isFetching = useKanbanStore((state) => state.isFetching)
@@ -46,13 +46,13 @@ export const useKanban = (boardId: number) => {
   }))
 
   const isMountedRef = useRef(true)
-  const currentBoardIdRef = useRef(boardId)
+  const currentSlugRef = useRef(slug)
 
-  const fetchBoard = useCallback(async (id: number, isBackgroundRefresh = false) => {
-    if (!isMountedRef.current || currentBoardIdRef.current !== id) return
+  const fetchBoard = useCallback(async (boardSlug: string, isBackgroundRefresh = false) => {
+    if (!isMountedRef.current || currentSlugRef.current !== boardSlug) return
 
     if (!isBackgroundRefresh) {
-      const cached = cacheService.get<BoardDetail>(CacheKeys.board(id))
+      const cached = cacheService.get<BoardDetail>(CacheKeys.board(boardSlug))
       if (cached) {
         actions.setBoard(cached)
         actions.setFetching(true)
@@ -66,15 +66,15 @@ export const useKanban = (boardId: number) => {
     actions.setError(null)
 
     try {
-      const response = await boardsApi.get(id)
+      const response = await boardsApi.get(boardSlug)
 
-      if (isMountedRef.current && currentBoardIdRef.current === id) {
+      if (isMountedRef.current && currentSlugRef.current === boardSlug) {
         actions.setBoardWithCache(response.data)
       }
     } catch (error) {
       console.error('Failed to fetch board:', error)
       
-      if (isMountedRef.current && currentBoardIdRef.current === id) {
+      if (isMountedRef.current && currentSlugRef.current === boardSlug) {
         const currentBoard = useKanbanStore.getState().board
         if (!currentBoard) {
           actions.setError('Failed to load board')
@@ -82,7 +82,7 @@ export const useKanban = (boardId: number) => {
         }
       }
     } finally {
-      if (isMountedRef.current && currentBoardIdRef.current === id) {
+      if (isMountedRef.current && currentSlugRef.current === boardSlug) {
         actions.setLoading(false)
         actions.setFetching(false)
       }
@@ -91,28 +91,28 @@ export const useKanban = (boardId: number) => {
 
   useEffect(() => {
     isMountedRef.current = true
-    currentBoardIdRef.current = boardId
+    currentSlugRef.current = slug
 
-    if (boardId) {
-      fetchBoard(boardId)
+    if (slug) {
+      fetchBoard(slug)
     }
 
     return () => {
       isMountedRef.current = false
     }
-  }, [boardId]) 
+  }, [slug, fetchBoard]) 
 
   useEffect(() => {
     const handleFocus = () => {
       const currentBoard = useKanbanStore.getState().board
-      if (boardId && currentBoard && isMountedRef.current) {
-        fetchBoard(boardId, true)
+      if (slug && currentBoard && isMountedRef.current) {
+        fetchBoard(slug, true)
       }
     }
 
     window.addEventListener('focus', handleFocus)
     return () => window.removeEventListener('focus', handleFocus)
-  }, [boardId]) 
+  }, [slug, fetchBoard]) 
 
   const createColumn = useCallback(async (data: CreateColumnRequest) => {
     try {
@@ -274,6 +274,25 @@ export const useKanban = (boardId: number) => {
     }
   }, [actions])
 
+  const updateBoard = useCallback(async (updates: { name?: string; description?: string }) => {
+    if (!board) return
+    try {
+      const response = await boardsApi.update(board.slug, updates)
+      const updatedBoard = {
+        ...board,
+        ...response.data,
+        columns: board.columns,
+      }
+      actions.setBoardWithCache(updatedBoard)
+      toast.success('Board updated')
+      return response.data
+    } catch (error) {
+      console.error('Failed to update board:', error)
+      toast.error('Failed to update board')
+      throw error
+    }
+  }, [board, actions])
+
   return {
     board,
     isLoading,
@@ -306,5 +325,6 @@ export const useKanban = (boardId: number) => {
     moveTask,
     addNote,
     deleteNote,
+    updateBoard,
   }
 }
