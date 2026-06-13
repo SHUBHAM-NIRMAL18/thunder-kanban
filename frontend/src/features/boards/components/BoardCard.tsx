@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 
 interface BoardCardProps {
   id: number
+  slug: string
   name: string
   description: string
   columnsCount: number
@@ -22,7 +23,7 @@ const ACCENT_COLORS = [
 ]
 
 export const BoardCard = ({
-  id, name, description, columnsCount, tasksCount, colorIndex,
+  id, slug, name, description, columnsCount, tasksCount, colorIndex,
   onDuplicate, onDelete,
 }: BoardCardProps) => {
   const [menuOpen, setMenuOpen]     = useState(false)
@@ -102,7 +103,7 @@ export const BoardCard = ({
       <div style={{ marginBottom: 20 }}>
         <h3
           style={{ ...cardTitle, color: hovered ? 'var(--text-primary)' : 'var(--text-primary)' }}
-          onClick={() => navigate(`/boards/${id}`)}
+          onClick={() => navigate(`/boards/${slug}`)}
         >
           {name}
         </h3>
@@ -127,7 +128,7 @@ export const BoardCard = ({
 
       {/* CTA */}
       <Link
-        to={`/boards/${id}`}
+        to={`/boards/${slug}`}
         style={{
           ...openBtn,
           color: accentColor,
