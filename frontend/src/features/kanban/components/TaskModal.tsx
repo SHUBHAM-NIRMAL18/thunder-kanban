@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import type { Task } from '@/api/endpoints/boards'
+import type { Task, Member } from '@/api/endpoints/boards'
 
 interface TaskModalProps {
   isOpen: boolean
@@ -9,9 +9,11 @@ interface TaskModalProps {
     description: string
     priority: 'low' | 'medium' | 'high'
     due_date: string | null
+    assignee: number | null
   }) => Promise<void>
   task?: Task | null
   columnId: number
+  assignees: Member[]
 }
 
 const PRIORITIES: { value: 'low' | 'medium' | 'high'; label: string; color: string; bg: string }[] = [
@@ -20,11 +22,13 @@ const PRIORITIES: { value: 'low' | 'medium' | 'high'; label: string; color: stri
   { value: 'high',   label: 'High',   color: '#f87171', bg: 'rgba(239,68,68,0.15)'  },
 ]
 
-export const TaskModal = ({ isOpen, onClose, onSubmit, task }: TaskModalProps) => {
+export const TaskModal = ({ isOpen, onClose, onSubmit, task, assignees }: TaskModalProps) => {
   const [title, setTitle]           = useState('')
   const [description, setDescription] = useState('')
   const [priority, setPriority]     = useState<'low' | 'medium' | 'high'>('medium')
   const [dueDate, setDueDate]       = useState('')
+  const [assigneeId, setAssigneeId] = useState<number | null>(null)
+  const [showAssigneeDropdown, setShowAssigneeDropdown] = useState(false)
   const [isLoading, setIsLoading]   = useState(false)
   const [errors, setErrors]         = useState<{ title?: string }>({})
 
@@ -34,13 +38,22 @@ export const TaskModal = ({ isOpen, onClose, onSubmit, task }: TaskModalProps) =
       setDescription(task.description || '')
       setPriority(task.priority)
       setDueDate(task.due_date || '')
+      setAssigneeId(task.assignee ? task.assignee.id : null)
     } else {
-      setTitle(''); setDescription(''); setPriority('medium'); setDueDate('')
+      setTitle(''); setDescription(''); setPriority('medium'); setDueDate(''); setAssigneeId(null)
     }
+    setShowAssigneeDropdown(false)
     setErrors({})
   }, [task, isOpen])
 
   if (!isOpen) return null
+
+  const getInitials = (first: string, last: string, email: string) => {
+    const initials = `${first?.[0] ?? ''}${last?.[0] ?? ''}`.toUpperCase()
+    return initials || email[0].toUpperCase()
+  }
+
+  const selectedAssignee = assignees.find(a => a.id === assigneeId)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -49,12 +62,12 @@ export const TaskModal = ({ isOpen, onClose, onSubmit, task }: TaskModalProps) =
     if (title.length > 200) { setErrors({ title: 'Task title cannot exceed 200 characters' }); return }
     setIsLoading(true)
     try {
-      await onSubmit({ title: title.trim(), description: description.trim(), priority, due_date: dueDate || null })
+      await onSubmit({ title: title.trim(), description: description.trim(), priority, due_date: dueDate || null, assignee: assigneeId })
     } catch { /* Error handled in hook */ } finally { setIsLoading(false) }
   }
 
   const handleClose = () => {
-    setTitle(''); setDescription(''); setPriority('medium'); setDueDate(''); setErrors({})
+    setTitle(''); setDescription(''); setPriority('medium'); setDueDate(''); setAssigneeId(null); setErrors({}); setShowAssigneeDropdown(false)
     onClose()
   }
 
@@ -198,6 +211,107 @@ export const TaskModal = ({ isOpen, onClose, onSubmit, task }: TaskModalProps) =
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Assignee selection */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 7, position: 'relative' }}>
+            <label style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-secondary)', letterSpacing: '0.02em' }}>
+              ASSIGNEE
+            </label>
+            <button
+              type="button"
+              onClick={() => setShowAssigneeDropdown(!showAssigneeDropdown)}
+              className="dark-input"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                cursor: 'pointer',
+                textAlign: 'left',
+                justifyContent: 'space-between',
+                height: 38,
+                padding: '0 12px',
+                width: '100%',
+              }}
+            >
+              {selectedAssignee ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ width: 22, height: 22, borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent), var(--accent-end))', color: '#fff', fontSize: '0.68rem', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {getInitials(selectedAssignee.first_name, selectedAssignee.last_name, selectedAssignee.email)}
+                  </div>
+                  <span style={{ fontSize: '0.82rem', color: 'var(--text-primary)' }}>
+                    {selectedAssignee.first_name} {selectedAssignee.last_name}
+                  </span>
+                </div>
+              ) : (
+                <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>Unassigned</span>
+              )}
+              <svg style={{ transform: showAssigneeDropdown ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', opacity: 0.6 }} width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            {showAssigneeDropdown && (
+              <div style={{
+                position: 'absolute',
+                top: 'calc(100% + 4px)',
+                left: 0,
+                right: 0,
+                zIndex: 100,
+                borderRadius: 12,
+                maxHeight: 180,
+                overflowY: 'auto',
+                border: '1px solid rgba(255,255,255,0.12)',
+                background: 'rgba(15, 14, 28, 0.98)',
+                boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
+              }} className="custom-scroll">
+                {/* Option: Unassigned */}
+                <div
+                  onClick={() => { setAssigneeId(null); setShowAssigneeDropdown(false) }}
+                  style={{
+                    padding: '10px 14px',
+                    cursor: 'pointer',
+                    fontSize: '0.82rem',
+                    color: 'var(--text-muted)',
+                    transition: 'background 0.15s',
+                  }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                >
+                  Unassigned
+                </div>
+
+                {assignees.map(a => (
+                  <div
+                    key={a.id}
+                    onClick={() => { setAssigneeId(a.id); setShowAssigneeDropdown(false) }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 10,
+                      padding: '8px 14px',
+                      cursor: 'pointer',
+                      transition: 'background 0.15s',
+                      background: assigneeId === a.id ? 'rgba(124, 58, 237, 0.12)' : 'transparent',
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                    onMouseLeave={e => e.currentTarget.style.background = assigneeId === a.id ? 'rgba(124, 58, 237, 0.12)' : 'transparent'}
+                  >
+                    <div style={{ width: 26, height: 26, borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent), var(--accent-end))', color: '#fff', fontSize: '0.72rem', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      {getInitials(a.first_name, a.last_name, a.email)}
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                      <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                        {a.first_name} {a.last_name}
+                      </span>
+                      <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                        {a.email}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Due date */}
