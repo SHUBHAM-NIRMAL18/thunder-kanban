@@ -2,6 +2,7 @@ from django.db import models
 from django.core.validators import MinLengthValidator, MaxLengthValidator, MinValueValidator
 from django.core.exceptions import ValidationError
 from django.utils import timezone
+from django.conf import settings
 from columns.models import Column
 from core.validators import validate_no_special_chars
 
@@ -17,6 +18,13 @@ class Task(models.Model):
         Column,
         on_delete=models.CASCADE,
         related_name='tasks'
+    )
+    assignee = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='assigned_tasks'
     )
     title = models.CharField(
         max_length=200,
@@ -65,3 +73,33 @@ class Task(models.Model):
     def save(self, *args, **kwargs):
         self.full_clean()
         super().save(*args, **kwargs)
+
+
+class TaskNote(models.Model):
+    task = models.ForeignKey(
+        Task,
+        on_delete=models.CASCADE,
+        related_name='notes'
+    )
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='task_notes'
+    )
+    content = models.TextField(
+        validators=[
+            MinLengthValidator(1, 'Note content cannot be empty.'),
+            MaxLengthValidator(1000, 'Note content cannot exceed 1000 characters.')
+        ]
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['created_at']
+        indexes = [
+            models.Index(fields=['task', 'created_at']),
+        ]
+
+    def __str__(self):
+        return f"Note by {self.author.email} on Task {self.task.id}"
