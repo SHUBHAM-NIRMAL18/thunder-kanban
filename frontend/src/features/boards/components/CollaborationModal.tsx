@@ -22,6 +22,7 @@ export const CollaborationModal = ({ isOpen, onClose, board, onUpdate }: Collabo
   const [isAdding, setIsAdding] = useState(false)
   const [showDropdown, setShowDropdown] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const [memberToRemove, setMemberToRemove] = useState<{ id: number; name: string; isSelf: boolean } | null>(null)
 
   // Track if input is focused to handle keyboard dismissals or clicks
   useEffect(() => {
@@ -307,7 +308,11 @@ export const CollaborationModal = ({ isOpen, onClose, board, onUpdate }: Collabo
                     {/* Action: remove member or leave */}
                     {isOwner ? (
                       <button
-                        onClick={() => handleRemoveMember(member.id, false)}
+                        onClick={() => setMemberToRemove({
+                          id: member.id,
+                          name: `${member.first_name} ${member.last_name}`.trim() || member.email,
+                          isSelf: false
+                        })}
                         style={styles.removeMemberBtn}
                         title="Remove collaborator"
                       >
@@ -315,7 +320,11 @@ export const CollaborationModal = ({ isOpen, onClose, board, onUpdate }: Collabo
                       </button>
                     ) : isSelf ? (
                       <button
-                        onClick={() => handleRemoveMember(member.id, true)}
+                        onClick={() => setMemberToRemove({
+                          id: member.id,
+                          name: 'yourself',
+                          isSelf: true
+                        })}
                         style={styles.leaveBtn}
                       >
                         <LogOut className="h-3.5 w-3.5" />
@@ -329,6 +338,39 @@ export const CollaborationModal = ({ isOpen, onClose, board, onUpdate }: Collabo
               })}
             </div>
           </div>
+
+          {/* Confirmation Overlay */}
+          {memberToRemove && (
+            <div style={styles.confirmOverlay}>
+              <div style={styles.confirmCard} className="glass-strong animate-scaleIn">
+                <h4 style={styles.confirmTitle}>
+                  {memberToRemove.isSelf ? 'Leave Board?' : 'Remove Member?'}
+                </h4>
+                <p style={styles.confirmDesc}>
+                  {memberToRemove.isSelf 
+                    ? 'Are you sure you want to leave this board? You will lose access to all tasks and columns.'
+                    : `Are you sure you want to remove ${memberToRemove.name} from this board?`}
+                </p>
+                <div style={styles.confirmActions}>
+                  <button 
+                    onClick={() => setMemberToRemove(null)} 
+                    style={styles.confirmCancelBtn}
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    onClick={() => {
+                      handleRemoveMember(memberToRemove.id, memberToRemove.isSelf)
+                      setMemberToRemove(null)
+                    }} 
+                    style={styles.confirmDeleteBtn}
+                  >
+                    {memberToRemove.isSelf ? 'Leave' : 'Remove'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -573,5 +615,67 @@ const styles: Record<string, React.CSSProperties> = {
     fontWeight: 600,
     cursor: 'pointer',
     transition: 'all 0.2s',
+  },
+  confirmOverlay: {
+    position: 'absolute',
+    inset: 0,
+    background: 'rgba(0, 0, 0, 0.75)',
+    backdropFilter: 'blur(4px)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '24px',
+    zIndex: 1010,
+    animation: 'fadeIn 0.2s ease',
+  },
+  confirmCard: {
+    width: '100%',
+    maxWidth: 320,
+    borderRadius: 16,
+    padding: '20px',
+    textAlign: 'center',
+    border: '1px solid var(--border-medium)',
+    background: 'rgba(30, 27, 75, 0.45)', // Sleek dark/violet translucent color matching glass-strong
+    boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)',
+  },
+  confirmTitle: {
+    fontSize: '0.95rem',
+    fontWeight: 700,
+    color: 'var(--text-primary)',
+    marginBottom: 8,
+  },
+  confirmDesc: {
+    fontSize: '0.78rem',
+    color: 'var(--text-muted)',
+    lineHeight: '1.4',
+    marginBottom: 20,
+  },
+  confirmActions: {
+    display: 'flex',
+    gap: 10,
+    justifyContent: 'center',
+  },
+  confirmCancelBtn: {
+    padding: '8px 16px',
+    borderRadius: 8,
+    border: '1px solid var(--border-subtle)',
+    background: 'rgba(255,255,255,0.05)',
+    color: 'var(--text-secondary)',
+    fontSize: '0.78rem',
+    fontWeight: 600,
+    cursor: 'pointer',
+    transition: 'all 0.15s',
+  },
+  confirmDeleteBtn: {
+    padding: '8px 16px',
+    borderRadius: 8,
+    border: 'none',
+    background: 'linear-gradient(135deg, var(--danger, #ef4444), #b91c1c)',
+    color: '#fff',
+    fontSize: '0.78rem',
+    fontWeight: 600,
+    cursor: 'pointer',
+    boxShadow: '0 4px 12px rgba(239, 68, 68, 0.2)',
+    transition: 'all 0.15s',
   },
 }
