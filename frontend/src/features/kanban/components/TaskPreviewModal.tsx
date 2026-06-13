@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { Task } from '@/api/endpoints/boards'
 
 interface TaskPreviewModalProps {
@@ -6,6 +7,9 @@ interface TaskPreviewModalProps {
   task: Task | null
   onEdit: () => void
   onDelete: () => void
+  onAddNote: (content: string) => Promise<any>
+  onDeleteNote: (noteId: number) => Promise<void>
+  boardOwnerEmail?: string
 }
 
 const PRIORITY_CONFIG = {
@@ -14,7 +18,10 @@ const PRIORITY_CONFIG = {
   high:   { color: '#f87171', bg: 'rgba(239,68,68,0.12)',  bar: '#ef4444', label: 'High'   },
 }
 
-export const TaskPreviewModal = ({ isOpen, onClose, task, onEdit, onDelete }: TaskPreviewModalProps) => {
+export const TaskPreviewModal = ({ isOpen, onClose, task, onEdit, onDelete, onAddNote, onDeleteNote, boardOwnerEmail }: TaskPreviewModalProps) => {
+  const [noteText, setNoteText] = useState('')
+  const [isAddingNote, setIsAddingNote] = useState(false)
+
   if (!isOpen || !task) return null
 
   const priority = PRIORITY_CONFIG[task.priority]
@@ -22,6 +29,25 @@ export const TaskPreviewModal = ({ isOpen, onClose, task, onEdit, onDelete }: Ta
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
     return date.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })
+  }
+
+  const getInitials = (first: string, last: string, email: string) => {
+    const initials = `${first?.[0] ?? ''}${last?.[0] ?? ''}`.toUpperCase()
+    return initials || email[0].toUpperCase()
+  }
+
+  const handleAddNoteSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!noteText.trim()) return
+    setIsAddingNote(true)
+    try {
+      await onAddNote(noteText.trim())
+      setNoteText('')
+    } catch {
+      // handled
+    } finally {
+      setIsAddingNote(false)
+    }
   }
 
   return (
@@ -127,6 +153,26 @@ export const TaskPreviewModal = ({ isOpen, onClose, task, onEdit, onDelete }: Ta
                 </span>
               </div>
             )}
+
+            {/* Assignee */}
+            <div>
+              <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: 5, fontWeight: 500, letterSpacing: '0.04em', textTransform: 'uppercase' }}>Assignee</p>
+              {task.assignee ? (
+                <span style={{
+                  fontSize: '0.78rem', fontWeight: 600,
+                  padding: '4px 12px 4px 6px', borderRadius: 99,
+                  background: 'rgba(255,255,255,0.06)', color: 'var(--text-secondary)',
+                  display: 'flex', alignItems: 'center', gap: 6,
+                }}>
+                  <div style={{ width: 18, height: 18, borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent), var(--accent-end))', color: '#fff', fontSize: '0.62rem', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {getInitials(task.assignee.first_name, task.assignee.last_name, task.assignee.email)}
+                  </div>
+                  {task.assignee.first_name} {task.assignee.last_name}
+                </span>
+              ) : (
+                <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontStyle: 'italic', display: 'block', padding: '4px 0' }}>Unassigned</span>
+              )}
+            </div>
           </div>
 
           {/* Description */}
@@ -166,6 +212,90 @@ export const TaskPreviewModal = ({ isOpen, onClose, task, onEdit, onDelete }: Ta
                 <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 500 }}>{value}</p>
               </div>
             ))}
+          </div>
+
+          {/* Notes / Activity Section */}
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 18 }}>
+            <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: 12, fontWeight: 500, letterSpacing: '0.04em', textTransform: 'uppercase' }}>Activity & Notes</p>
+            
+            {/* Notes List */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 16, maxHeight: 180, overflowY: 'auto' }} className="custom-scroll">
+              {task.notes && task.notes.length > 0 ? (
+                task.notes.map(note => {
+                  const initials = getInitials(note.author_name.split(' ')[0] || '', note.author_name.split(' ').slice(1).join(' ') || '', note.author_email)
+                  const dateStr = new Date(note.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+                  const canDelete = note.is_author || (boardOwnerEmail && boardOwnerEmail === note.author_email)
+                  return (
+                    <div key={note.id} style={{ display: 'flex', gap: 10, background: 'rgba(255,255,255,0.02)', padding: 10, borderRadius: 10, border: '1px solid rgba(255,255,255,0.04)' }}>
+                      <div style={{ width: 26, height: 26, borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent), var(--accent-end))', color: '#fff', fontSize: '0.7rem', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        {initials}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                          <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-primary)' }}>{note.author_name}</span>
+                          <span style={{ fontSize: '0.66rem', color: 'var(--text-muted)' }}>{dateStr}</span>
+                        </div>
+                        <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: 4, whiteSpace: 'pre-wrap', lineHeight: 1.4 }}>{note.content}</p>
+                      </div>
+                      {canDelete && (
+                        <button
+                          onClick={() => onDeleteNote(note.id)}
+                          style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 2, borderRadius: 4, alignSelf: 'flex-start' }}
+                          title="Delete note"
+                          onMouseEnter={e => e.currentTarget.style.color = 'var(--danger)'}
+                          onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}
+                        >
+                          <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                  )
+                })
+              ) : (
+                <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontStyle: 'italic', padding: '4px 0' }}>No notes yet.</p>
+              )}
+            </div>
+
+            {/* Add Note Form */}
+            <form onSubmit={handleAddNoteSubmit} style={{ display: 'flex', gap: 8 }}>
+              <input
+                type="text"
+                placeholder="Add a note or update..."
+                value={noteText}
+                onChange={e => setNoteText(e.target.value)}
+                disabled={isAddingNote}
+                style={{
+                  flex: 1,
+                  padding: '8px 12px',
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: 8,
+                  color: 'var(--text-primary)',
+                  fontSize: '0.8rem',
+                  outline: 'none',
+                  fontFamily: 'var(--font-sans)',
+                }}
+              />
+              <button
+                type="submit"
+                disabled={isAddingNote || !noteText.trim()}
+                style={{
+                  padding: '8px 14px',
+                  borderRadius: 8,
+                  border: 'none',
+                  background: 'linear-gradient(135deg, var(--accent), var(--accent-end))',
+                  color: '#fff',
+                  fontSize: '0.8rem',
+                  fontWeight: 600,
+                  cursor: isAddingNote || !noteText.trim() ? 'default' : 'pointer',
+                  opacity: isAddingNote || !noteText.trim() ? 0.6 : 1,
+                }}
+              >
+                Add
+              </button>
+            </form>
           </div>
         </div>
 
