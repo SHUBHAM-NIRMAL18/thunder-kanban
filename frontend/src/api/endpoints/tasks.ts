@@ -1,6 +1,6 @@
 import api from '../client'
 import type { ApiResponse } from '../types'
-import type { Task } from './boards'
+import type { Task, TaskNote } from './boards'
 
 export interface CreateTaskRequest {
   column: number
@@ -8,6 +8,7 @@ export interface CreateTaskRequest {
   description?: string
   priority?: 'low' | 'medium' | 'high'
   due_date?: string | null
+  assignee?: number | null
 }
 
 export interface UpdateTaskRequest {
@@ -15,6 +16,7 @@ export interface UpdateTaskRequest {
   description?: string
   priority?: 'low' | 'medium' | 'high'
   due_date?: string | null
+  assignee?: number | null
 }
 
 export interface MoveTaskRequest {
@@ -76,6 +78,16 @@ export const tasksApi = {
 
   bulkMove: async (data: BulkMoveTasksRequest) => {
     const response = await api.post<ApiResponse>('/tasks/bulk_move/', data)
+    return response.data
+  },
+
+  addNote: async (taskId: number, content: string) => {
+    const response = await api.post<ApiResponse<TaskNote>>(`/tasks/${taskId}/notes/`, { content })
+    return response.data
+  },
+
+  deleteNote: async (taskId: number, noteId: number) => {
+    const response = await api.delete<ApiResponse>(`/tasks/${taskId}/notes/${noteId}/`)
     return response.data
   },
 }
