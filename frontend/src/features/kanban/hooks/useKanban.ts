@@ -222,6 +222,58 @@ export const useKanban = (boardId: number) => {
     }
   }, [actions])
 
+  const addNote = useCallback(async (taskId: number, content: string) => {
+    try {
+      const response = await tasksApi.addNote(taskId, content)
+      const currentBoard = useKanbanStore.getState().board
+      if (currentBoard) {
+        const newBoard = {
+          ...currentBoard,
+          columns: currentBoard.columns.map(col => ({
+            ...col,
+            tasks: col.tasks.map(t =>
+              t.id === taskId
+                ? { ...t, notes: [...(t.notes || []), response.data] }
+                : t
+            )
+          }))
+        }
+        actions.setBoardWithCache(newBoard)
+      }
+      toast.success('Note added')
+      return response.data
+    } catch (error) {
+      console.error('Failed to add note:', error)
+      toast.error('Failed to add note')
+      throw error
+    }
+  }, [actions])
+
+  const deleteNote = useCallback(async (taskId: number, noteId: number) => {
+    try {
+      await tasksApi.deleteNote(taskId, noteId)
+      const currentBoard = useKanbanStore.getState().board
+      if (currentBoard) {
+        const newBoard = {
+          ...currentBoard,
+          columns: currentBoard.columns.map(col => ({
+            ...col,
+            tasks: col.tasks.map(t =>
+              t.id === taskId
+                ? { ...t, notes: (t.notes || []).filter(n => n.id !== noteId) }
+                : t
+            )
+          }))
+        }
+        actions.setBoardWithCache(newBoard)
+      }
+      toast.success('Note deleted')
+    } catch (error) {
+      console.error('Failed to delete note:', error)
+      toast.error('Failed to delete note')
+    }
+  }, [actions])
+
   return {
     board,
     isLoading,
@@ -252,5 +304,7 @@ export const useKanban = (boardId: number) => {
     updateTask,
     deleteTask,
     moveTask,
+    addNote,
+    deleteNote,
   }
 }
