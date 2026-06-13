@@ -37,11 +37,11 @@ export const useBoards = () => {
     }
   }, [])
   
-  const updateBoard = useCallback(async (id: number, data: UpdateBoardRequest) => {
+  const updateBoard = useCallback(async (slug: string, data: UpdateBoardRequest) => {
     try {
-      const response = await boardsApi.update(id, data)
+      const response = await boardsApi.update(slug, data)
       setBoards((prev) =>
-        prev.map((board) => (board.id === id ? { ...board, ...response.data } : board))
+        prev.map((board) => (board.slug === slug ? { ...board, ...response.data } : board))
       )
       toast.success('Board updated')
       return response.data
@@ -52,10 +52,10 @@ export const useBoards = () => {
     }
   }, [])
   
-  const deleteBoard = useCallback(async (id: number) => {
+  const deleteBoard = useCallback(async (slug: string) => {
     try {
-      await boardsApi.delete(id)
-      setBoards((prev) => prev.filter((board) => board.id !== id))
+      await boardsApi.delete(slug)
+      setBoards((prev) => prev.filter((board) => board.slug !== slug))
       toast.success('Board deleted')
     } catch (err) {
       console.error('Failed to delete board:', err)
@@ -64,9 +64,9 @@ export const useBoards = () => {
     }
   }, [])
   
-  const duplicateBoard = useCallback(async (id: number) => {
+  const duplicateBoard = useCallback(async (slug: string) => {
     try {
-      const response = await boardsApi.duplicate(id)
+      const response = await boardsApi.duplicate(slug)
       setBoards((prev) => [response.data, ...prev])
       toast.success('Board duplicated')
       return response.data
