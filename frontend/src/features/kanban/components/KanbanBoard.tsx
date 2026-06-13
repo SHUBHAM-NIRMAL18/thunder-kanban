@@ -52,11 +52,25 @@ export const KanbanBoard = ({ boardId }: KanbanBoardProps) => {
     updateTask,
     deleteTask,
     moveTask,
+    addNote,
+    deleteNote,
   } = useKanban(boardId)
 
   const [activeTask, setActiveTask] = useState<Task | null>(null)
   const [addingToColumnId, setAddingToColumnId] = useState<number | null>(null)
-  const [previewTask, setPreviewTask] = useState<Task | null>(null)
+  const [previewTaskId, setPreviewTaskId] = useState<number | null>(null)
+
+  const ownerMember = board ? {
+    id: board.owner_id,
+    email: board.owner,
+    first_name: board.owner_name.split(' ')[0] || '',
+    last_name: board.owner_name.split(' ').slice(1).join(' ') || ''
+  } : null
+  const potentialAssignees = board && ownerMember ? [ownerMember, ...board.members] : []
+
+  const previewTask = board
+    ? board.columns.flatMap((col) => col.tasks).find((t) => t.id === previewTaskId) || null
+    : null
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -130,6 +144,7 @@ export const KanbanBoard = ({ boardId }: KanbanBoardProps) => {
     description: string
     priority: 'low' | 'medium' | 'high'
     due_date: string | null
+    assignee: number | null
   }) => {
     if (selectedTask) {
       await updateTask(selectedTask.id, data)
@@ -150,7 +165,7 @@ export const KanbanBoard = ({ boardId }: KanbanBoardProps) => {
     else if (deleteTarget.type === 'column') await deleteColumn(deleteTarget.id)
   }
 
-  const handleTaskClick = (task: Task) => setPreviewTask(task)
+  const handleTaskClick = (task: Task) => setPreviewTaskId(task.id)
 
   if (isLoading && !board) return <BoardSkeleton />
 
@@ -371,20 +386,24 @@ export const KanbanBoard = ({ boardId }: KanbanBoardProps) => {
         onSubmit={handleTaskSubmit}
         task={selectedTask}
         columnId={addingToColumnId || 0}
+        assignees={potentialAssignees}
       />
 
       <ColumnModal isOpen={isColumnModalOpen} onClose={closeColumnModal} onSubmit={handleColumnSubmit} />
 
       <TaskPreviewModal
         isOpen={!!previewTask}
-        onClose={() => setPreviewTask(null)}
+        onClose={() => setPreviewTaskId(null)}
         task={previewTask}
         onEdit={() => {
-          if (previewTask) { openTaskModal(previewTask); setPreviewTask(null) }
+          if (previewTask) { openTaskModal(previewTask); setPreviewTaskId(null) }
         }}
         onDelete={() => {
-          if (previewTask) { openDeleteModal('task', previewTask.id, previewTask.title); setPreviewTask(null) }
+          if (previewTask) { openDeleteModal('task', previewTask.id, previewTask.title); setPreviewTaskId(null) }
         }}
+        onAddNote={(content) => addNote(previewTask!.id, content)}
+        onDeleteNote={(noteId) => deleteNote(previewTask!.id, noteId)}
+        boardOwnerEmail={board.owner}
       />
 
       <ConfirmDialog
