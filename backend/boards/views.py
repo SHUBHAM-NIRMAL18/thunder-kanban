@@ -12,6 +12,7 @@ from .models import Board
 from .serializers import BoardSerializer, BoardDetailSerializer, BoardCreateSerializer
 from core.utils import api_response
 from core.permissions import IsOwner, IsOwnerOrMember
+from accounts.serializers import UserSerializer
 
 # Create your views here.
 
