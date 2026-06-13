@@ -10,6 +10,7 @@ export interface Member {
 
 export interface Board {
   id: number
+  slug: string
   name: string
   description: string
   is_archived: boolean
@@ -85,8 +86,8 @@ export const boardsApi = {
     return response.data
   },
 
-  get: async (id: number) => {
-    const response = await api.get<ApiResponse<BoardDetail>>(`/boards/${id}/`)
+  get: async (slug: string) => {
+    const response = await api.get<ApiResponse<BoardDetail>>(`/boards/${slug}/`)
     return response.data
   },
 
@@ -95,18 +96,18 @@ export const boardsApi = {
     return response.data
   },
 
-  update: async (id: number, data: UpdateBoardRequest) => {
-    const response = await api.patch<ApiResponse<Board>>(`/boards/${id}/`, data)
+  update: async (slug: string, data: UpdateBoardRequest) => {
+    const response = await api.patch<ApiResponse<Board>>(`/boards/${slug}/`, data)
     return response.data
   },
 
-  delete: async (id: number) => {
-    const response = await api.delete<ApiResponse>(`/boards/${id}/`)
+  delete: async (slug: string) => {
+    const response = await api.delete<ApiResponse>(`/boards/${slug}/`)
     return response.data
   },
 
-  duplicate: async (id: number) => {
-    const response = await api.post<ApiResponse<BoardDetail>>(`/boards/${id}/duplicate/`)
+  duplicate: async (slug: string) => {
+    const response = await api.post<ApiResponse<BoardDetail>>(`/boards/${slug}/duplicate/`)
     return response.data
   },
 
@@ -115,18 +116,18 @@ export const boardsApi = {
     return response.data
   },
 
-  addMember: async (boardId: number, email: string) => {
-    const response = await api.post<ApiResponse<Member>>(`/boards/${boardId}/members/`, { email })
+  addMember: async (slug: string, email: string) => {
+    const response = await api.post<ApiResponse<Member>>(`/boards/${slug}/members/`, { email })
     return response.data
   },
 
-  removeMember: async (boardId: number, userId: number) => {
-    const response = await api.delete<ApiResponse>(`/boards/${boardId}/members/${userId}/`)
+  removeMember: async (slug: string, userId: number) => {
+    const response = await api.delete<ApiResponse>(`/boards/${slug}/members/${userId}/`)
     return response.data
   },
 
-  resetInvite: async (boardId: number) => {
-    const response = await api.post<ApiResponse<Board>>(`/boards/${boardId}/reset-invite/`)
+  resetInvite: async (slug: string) => {
+    const response = await api.post<ApiResponse<Board>>(`/boards/${slug}/reset-invite/`)
     return response.data
   },
 }
