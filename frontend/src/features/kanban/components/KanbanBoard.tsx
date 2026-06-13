@@ -23,10 +23,10 @@ import { useKanban } from '../hooks/useKanban'
 import type { Task } from '@/api/endpoints/boards'
 
 interface KanbanBoardProps {
-  boardId: number
+  boardSlug: string
 }
 
-export const KanbanBoard = ({ boardId }: KanbanBoardProps) => {
+export const KanbanBoard = ({ boardSlug }: KanbanBoardProps) => {
   const {
     board,
     isLoading,
@@ -54,7 +54,7 @@ export const KanbanBoard = ({ boardId }: KanbanBoardProps) => {
     moveTask,
     addNote,
     deleteNote,
-  } = useKanban(boardId)
+  } = useKanban(boardSlug)
 
   const [activeTask, setActiveTask] = useState<Task | null>(null)
   const [addingToColumnId, setAddingToColumnId] = useState<number | null>(null)
