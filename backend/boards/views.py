@@ -33,10 +33,10 @@ User = get_user_model()
         description='Get detailed information about a specific board including all columns and tasks.',
         parameters=[
             OpenApiParameter(
-                name='id',
-                type=OpenApiTypes.INT,
+                name='slug',
+                type=OpenApiTypes.STR,
                 location=OpenApiParameter.PATH,
-                description='Board ID',
+                description='Board Slug',
             ),
         ],
         responses={
@@ -67,10 +67,10 @@ User = get_user_model()
         description='Update board name and/or description.',
         parameters=[
             OpenApiParameter(
-                name='id',
-                type=OpenApiTypes.INT,
+                name='slug',
+                type=OpenApiTypes.STR,
                 location=OpenApiParameter.PATH,
-                description='Board ID',
+                description='Board Slug',
             ),
         ],
         responses={
@@ -85,10 +85,10 @@ User = get_user_model()
         description='Partially update board fields.',
         parameters=[
             OpenApiParameter(
-                name='id',
-                type=OpenApiTypes.INT,
+                name='slug',
+                type=OpenApiTypes.STR,
                 location=OpenApiParameter.PATH,
-                description='Board ID',
+                description='Board Slug',
             ),
         ],
         responses={
@@ -103,10 +103,10 @@ User = get_user_model()
         description='Soft delete a board. The board can be recovered later.',
         parameters=[
             OpenApiParameter(
-                name='id',
-                type=OpenApiTypes.INT,
+                name='slug',
+                type=OpenApiTypes.STR,
                 location=OpenApiParameter.PATH,
-                description='Board ID',
+                description='Board Slug',
             ),
         ],
         responses={
@@ -120,7 +120,7 @@ User = get_user_model()
 class BoardViewSet(viewsets.ModelViewSet):
     serializer_class = BoardSerializer
     permission_classes = [IsAuthenticated, IsOwnerOrMember]
-    lookup_field = 'pk'
+    lookup_field = 'slug'
 
     def get_permissions(self):
         if self.action in ['join_board']:
@@ -326,10 +326,10 @@ class BoardViewSet(viewsets.ModelViewSet):
         description='Create a copy of an existing board including all columns and tasks.',
         parameters=[
             OpenApiParameter(
-                name='pk',
-                type=OpenApiTypes.INT,
+                name='slug',
+                type=OpenApiTypes.STR,
                 location=OpenApiParameter.PATH,
-                description='Board ID to duplicate',
+                description='Board Slug to duplicate',
             ),
         ],
         responses={
