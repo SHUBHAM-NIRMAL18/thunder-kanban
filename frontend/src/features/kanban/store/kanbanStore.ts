@@ -3,6 +3,13 @@ import { cacheService } from '@/services/cache.service'
 import { CacheKeys } from '@/services/cache.keys'
 import type { BoardDetail, Column, Task } from '@/api/endpoints/boards'
 
+const updateCache = (board: BoardDetail) => {
+  cacheService.set(CacheKeys.board(board.id), board)
+  if (board.slug) {
+    cacheService.set(CacheKeys.board(board.slug), board)
+  }
+}
+
 interface KanbanState {
   board: BoardDetail | null
   isLoading: boolean
@@ -21,7 +28,7 @@ interface KanbanState {
   setLoading: (loading: boolean) => void
   setFetching: (fetching: boolean) => void  
   setError: (error: string | null) => void
-  loadFromCache: (boardId: number) => BoardDetail | null  
+  loadFromCache: (boardId: number | string) => BoardDetail | null  
 
   openTaskModal: (task?: Task) => void
   closeTaskModal: () => void
@@ -61,7 +68,7 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
   setBoard: (board) => set({ board }),
   
   setBoardWithCache: (board) => {
-    cacheService.set(CacheKeys.board(board.id), board)
+    updateCache(board)
     set({ board })
   },
   
@@ -102,7 +109,7 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
       columns: [...board.columns, column],
     }
     
-    cacheService.set(CacheKeys.board(board.id), newBoard)
+    updateCache(newBoard)
     set({ board: newBoard })
   },
 
@@ -117,7 +124,7 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
       ),
     }
     
-    cacheService.set(CacheKeys.board(board.id), newBoard)
+    updateCache(newBoard)
     set({ board: newBoard })
   },
 
@@ -130,7 +137,7 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
       columns: board.columns.filter((col) => col.id !== columnId),
     }
     
-    cacheService.set(CacheKeys.board(board.id), newBoard)
+    updateCache(newBoard)
     set({ board: newBoard })
   },
 
@@ -151,7 +158,7 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
       columns: reorderedColumns,
     }
     
-    cacheService.set(CacheKeys.board(board.id), newBoard)
+    updateCache(newBoard)
     set({ board: newBoard })
   },
 
@@ -186,7 +193,7 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
       })),
     }
     
-    cacheService.set(CacheKeys.board(board.id), newBoard)
+    updateCache(newBoard)
     set({ board: newBoard })
   },
 
@@ -205,7 +212,7 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
       })),
     }
     
-    cacheService.set(CacheKeys.board(board.id), newBoard)
+    updateCache(newBoard)
     set({ board: newBoard })
   },
 
@@ -273,7 +280,7 @@ export const useKanbanStore = create<KanbanState>((set, get) => ({
       columns: newColumns,
     }
     
-    cacheService.set(CacheKeys.board(board.id), newBoard)
+    updateCache(newBoard)
     set({ board: newBoard })
   },
 }))
