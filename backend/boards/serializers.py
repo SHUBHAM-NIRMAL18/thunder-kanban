@@ -17,6 +17,7 @@ class BoardSerializer(serializers.ModelSerializer):
         model = Board
         fields = [
             'id',
+            'slug',
             'name',
             'description',
             'is_archived',
@@ -30,7 +31,7 @@ class BoardSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
         ]
-        read_only_fields = ['id', 'owner', 'members', 'invite_token', 'is_archived', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'slug', 'owner', 'members', 'invite_token', 'is_archived', 'created_at', 'updated_at']
 
     @extend_schema_field(OpenApiTypes.STR)
     def get_owner_name(self, obj) -> str:
