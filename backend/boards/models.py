@@ -1,4 +1,6 @@
 import secrets
+import uuid
+from django.utils.text import slugify
 from django.db import models
 from django.conf import settings
 from django.core.validators import MinLengthValidator, MaxLengthValidator
@@ -19,6 +21,12 @@ class Board(models.Model):
     )
     invite_token = models.CharField(
         max_length=64,
+        unique=True,
+        null=True,
+        blank=True
+    )
+    slug = models.SlugField(
+        max_length=150,
         unique=True,
         null=True,
         blank=True
@@ -58,5 +66,27 @@ class Board(models.Model):
     def save(self, *args, **kwargs):
         if not self.invite_token:
             self.invite_token = secrets.token_urlsafe(16)
+        
+        slugified_name = slugify(self.name) or "board"
+        if not self.id:
+            # Creation
+            self.slug = f"{slugified_name}-{uuid.uuid4().hex[:8]}"
+        else:
+            # Update (or data migration)
+            if not self.slug:
+                # Populate if empty
+                self.slug = f"{slugified_name}-{uuid.uuid4().hex[:8]}"
+            else:
+                try:
+                    orig = Board.objects.get(pk=self.pk)
+                    if orig.name != self.name:
+                        # Name changed, update slug but preserve suffix
+                        parts = self.slug.split('-')
+                        suffix = parts[-1] if len(parts) > 1 and len(parts[-1]) == 8 else uuid.uuid4().hex[:8]
+                        self.slug = f"{slugified_name}-{suffix}"
+                except Board.DoesNotExist:
+                    # In case of custom id creation
+                    self.slug = f"{slugified_name}-{uuid.uuid4().hex[:8]}"
+
         self.full_clean()
         super().save(*args, **kwargs)
