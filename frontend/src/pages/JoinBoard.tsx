@@ -16,7 +16,7 @@ export const JoinBoard = () => {
       try {
         const response = await boardsApi.join(token)
         toast.success(response.meta?.message || 'Successfully joined the board!')
-        navigate(`/boards/${response.data.id}`)
+        navigate(`/boards/${response.data.slug}`)
       } catch (err: any) {
         console.error('Failed to join board:', err)
         // If join fails (e.g. invalid token, archived, etc.), interceptor toasts the detail.
