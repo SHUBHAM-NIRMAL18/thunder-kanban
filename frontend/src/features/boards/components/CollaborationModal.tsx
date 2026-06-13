@@ -77,9 +77,9 @@ export const CollaborationModal = ({ isOpen, onClose, board, onUpdate }: Collabo
 
   const handleResetLink = async () => {
     try {
-      await boardsApi.resetInvite(board.id)
+      await boardsApi.resetInvite(board.slug)
       // fetch full details to reload columns and full board model
-      const refetched = await boardsApi.get(board.id)
+      const refetched = await boardsApi.get(board.slug)
       onUpdate(refetched.data)
       toast.success('Invite link reset successfully!')
     } catch {
@@ -98,9 +98,9 @@ export const CollaborationModal = ({ isOpen, onClose, board, onUpdate }: Collabo
 
     setIsAdding(true)
     try {
-      await boardsApi.addMember(board.id, searchQuery.trim())
+      await boardsApi.addMember(board.slug, searchQuery.trim())
       // Refetch board details to update parent state
-      const refetched = await boardsApi.get(board.id)
+      const refetched = await boardsApi.get(board.slug)
       onUpdate(refetched.data)
       setSearchQuery('')
       toast.success('Member added successfully!')
@@ -113,14 +113,14 @@ export const CollaborationModal = ({ isOpen, onClose, board, onUpdate }: Collabo
 
   const handleRemoveMember = async (memberId: number, isSelf: boolean) => {
     try {
-      await boardsApi.removeMember(board.id, memberId)
+      await boardsApi.removeMember(board.slug, memberId)
       
       if (isSelf) {
         toast.success('You left the board.')
         onClose()
         window.location.href = '/dashboard'
       } else {
-        const refetched = await boardsApi.get(board.id)
+        const refetched = await boardsApi.get(board.slug)
         onUpdate(refetched.data)
         toast.success('Member removed successfully.')
       }
