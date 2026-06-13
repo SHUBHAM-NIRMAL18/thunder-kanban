@@ -14,6 +14,7 @@ export interface Board {
   description: string
   is_archived: boolean
   owner: string
+  owner_id: number
   owner_name: string
   members: Member[]
   invite_token: string
@@ -35,6 +36,16 @@ export interface Column {
   updated_at: string
 }
 
+export interface TaskNote {
+  id: number
+  content: string
+  author_name: string
+  author_email: string
+  is_author: boolean
+  created_at: string
+  updated_at: string
+}
+
 export interface Task {
   id: number
   column: number
@@ -48,6 +59,8 @@ export interface Task {
   due_date: string | null
   is_overdue: boolean
   is_archived: boolean
+  assignee?: Member | null
+  notes?: TaskNote[]
   created_at: string
   updated_at: string
 }
