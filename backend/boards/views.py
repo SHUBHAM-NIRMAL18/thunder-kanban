@@ -232,7 +232,7 @@ class BoardViewSet(viewsets.ModelViewSet):
         )
 
     @action(detail=True, methods=['post'], url_path='members')
-    def add_member(self, request, pk=None):
+    def add_member(self, request, slug=None, **kwargs):
         board = self.get_object()
         if board.owner != request.user:
             return api_response(
@@ -274,7 +274,7 @@ class BoardViewSet(viewsets.ModelViewSet):
         )
 
     @action(detail=True, methods=['delete'], url_path='members/(?P<user_id>[^/.]+)')
-    def remove_member(self, request, pk=None, user_id=None):
+    def remove_member(self, request, slug=None, user_id=None, **kwargs):
         board = self.get_object()
         
         try:
@@ -306,7 +306,7 @@ class BoardViewSet(viewsets.ModelViewSet):
         )
 
     @action(detail=True, methods=['post'], url_path='reset-invite')
-    def reset_invite(self, request, pk=None):
+    def reset_invite(self, request, slug=None, **kwargs):
         board = self.get_object()
         if board.owner != request.user:
             return api_response(
@@ -338,7 +338,7 @@ class BoardViewSet(viewsets.ModelViewSet):
         }
     )
     @action(detail=True, methods=['post'])
-    def duplicate(self, request, pk=None):
+    def duplicate(self, request, slug=None, **kwargs):
         original_board = self.get_object()
         
         base_name = f"{original_board.name} (Copy)"
