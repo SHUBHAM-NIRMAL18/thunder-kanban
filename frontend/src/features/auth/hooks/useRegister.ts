@@ -19,10 +19,20 @@ export const useRegister = () => {
       navigate('/dashboard')
     } catch (error: unknown) {
       console.error('Registration error:', error)
-      // Error toasting is handled by the global interceptor in client.ts
-      // Only show a fallback for non-axios / network errors
       const isAxiosError = error && typeof error === 'object' && 'response' in error
-      if (!isAxiosError) {
+      if (isAxiosError) {
+        const axiosError = error as any
+        const apiErrors = axiosError.response?.data?.errors
+        if (apiErrors && Array.isArray(apiErrors)) {
+          apiErrors.forEach((err: any) => {
+            if (err.detail) {
+              toast.error(err.detail)
+            }
+          })
+        } else {
+          toast.error('Registration failed. Please check your information.')
+        }
+      } else {
         toast.error('Network error. Please check your connection.')
       }
     } finally {
