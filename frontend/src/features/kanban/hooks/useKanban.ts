@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef, useMemo } from 'react'
 import toast from 'react-hot-toast'
 import { boardsApi } from '@/api/endpoints/boards'
 import { columnsApi } from '@/api/endpoints/columns'
@@ -22,28 +22,71 @@ export const useKanban = (slug: string) => {
   const deleteTarget = useKanbanStore((state) => state.deleteTarget)
   const editingColumnId = useKanbanStore((state) => state.editingColumnId)
 
-  const actions = useKanbanStore((state) => ({
-    setBoard: state.setBoard,
-    setBoardWithCache: state.setBoardWithCache,
-    setLoading: state.setLoading,
-    setFetching: state.setFetching,
-    setError: state.setError,
-    openTaskModal: state.openTaskModal,
-    closeTaskModal: state.closeTaskModal,
-    openColumnModal: state.openColumnModal,
-    closeColumnModal: state.closeColumnModal,
-    openDeleteModal: state.openDeleteModal,
-    closeDeleteModal: state.closeDeleteModal,
-    setEditingColumn: state.setEditingColumn,
-    addColumn: state.addColumn,
-    updateColumn: state.updateColumn,
-    removeColumn: state.removeColumn,
-    reorderColumns: state.reorderColumns,
-    addTask: state.addTask,
-    updateTask: state.updateTask,
-    removeTask: state.removeTask,
-    moveTask: state.moveTask,
-  }))
+  // Select individual functions to ensure their references are stable
+  const setBoard = useKanbanStore((state) => state.setBoard)
+  const setBoardWithCache = useKanbanStore((state) => state.setBoardWithCache)
+  const setLoading = useKanbanStore((state) => state.setLoading)
+  const setFetching = useKanbanStore((state) => state.setFetching)
+  const setError = useKanbanStore((state) => state.setError)
+  const openTaskModal = useKanbanStore((state) => state.openTaskModal)
+  const closeTaskModal = useKanbanStore((state) => state.closeTaskModal)
+  const openColumnModal = useKanbanStore((state) => state.openColumnModal)
+  const closeColumnModal = useKanbanStore((state) => state.closeColumnModal)
+  const openDeleteModal = useKanbanStore((state) => state.openDeleteModal)
+  const closeDeleteModal = useKanbanStore((state) => state.closeDeleteModal)
+  const setEditingColumn = useKanbanStore((state) => state.setEditingColumn)
+  const addColumn = useKanbanStore((state) => state.addColumn)
+  const storeUpdateColumn = useKanbanStore((state) => state.updateColumn)
+  const removeColumn = useKanbanStore((state) => state.removeColumn)
+  const storeReorderColumns = useKanbanStore((state) => state.reorderColumns)
+  const addTask = useKanbanStore((state) => state.addTask)
+  const storeUpdateTask = useKanbanStore((state) => state.updateTask)
+  const removeTask = useKanbanStore((state) => state.removeTask)
+  const storeMoveTask = useKanbanStore((state) => state.moveTask)
+
+  const actions = useMemo(() => ({
+    setBoard,
+    setBoardWithCache,
+    setLoading,
+    setFetching,
+    setError,
+    openTaskModal,
+    closeTaskModal,
+    openColumnModal,
+    closeColumnModal,
+    openDeleteModal,
+    closeDeleteModal,
+    setEditingColumn,
+    addColumn,
+    updateColumn: storeUpdateColumn,
+    removeColumn,
+    reorderColumns: storeReorderColumns,
+    addTask,
+    updateTask: storeUpdateTask,
+    removeTask,
+    moveTask: storeMoveTask,
+  }), [
+    setBoard,
+    setBoardWithCache,
+    setLoading,
+    setFetching,
+    setError,
+    openTaskModal,
+    closeTaskModal,
+    openColumnModal,
+    closeColumnModal,
+    openDeleteModal,
+    closeDeleteModal,
+    setEditingColumn,
+    addColumn,
+    storeUpdateColumn,
+    removeColumn,
+    storeReorderColumns,
+    addTask,
+    storeUpdateTask,
+    removeTask,
+    storeMoveTask,
+  ])
 
   const isMountedRef = useRef(true)
   const currentSlugRef = useRef(slug)
