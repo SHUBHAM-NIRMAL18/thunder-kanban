@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { User, Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react'
 import { registerSchema, type RegisterFormData } from '../schemas/authSchemas'
 import { useRegister } from '../hooks/useRegister'
@@ -10,6 +10,7 @@ export const RegisterForm = () => {
   const { handleRegister, isLoading } = useRegister()
   const [showPassword, setShowPassword] = useState(false)
   const [showPassword2, setShowPassword2] = useState(false)
+  const location = useLocation()
   const {
     register,
     handleSubmit,
@@ -201,7 +202,11 @@ export const RegisterForm = () => {
       {/* Redirect Link */}
       <p className="text-center text-xs text-slate-400 mt-4">
         Already have an account?{' '}
-        <Link to="/login" className="text-violet-400 hover:text-violet-300 font-semibold hover:underline transition-colors">
+        <Link 
+          to="/login" 
+          state={location.state}
+          className="text-violet-400 hover:text-violet-300 font-semibold hover:underline transition-colors"
+        >
           Sign in
         </Link>
       </p>
