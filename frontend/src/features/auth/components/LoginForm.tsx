@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react'
 import { loginSchema, type LoginFormData } from '../schemas/authSchemas'
 import { useLogin } from '../hooks/useLogin'
@@ -9,6 +9,7 @@ import { useLogin } from '../hooks/useLogin'
 export const LoginForm = () => {
   const { handleLogin, isLoading } = useLogin()
   const [showPassword, setShowPassword] = useState(false)
+  const location = useLocation()
   const {
     register,
     handleSubmit,
@@ -108,7 +109,11 @@ export const LoginForm = () => {
       {/* Redirect Link */}
       <p className="text-center text-xs text-slate-400 mt-4">
         Don't have an account?{' '}
-        <Link to="/register" className="text-violet-400 hover:text-violet-300 font-semibold hover:underline transition-colors">
+        <Link 
+          to="/register" 
+          state={location.state}
+          className="text-violet-400 hover:text-violet-300 font-semibold hover:underline transition-colors"
+        >
           Sign up
         </Link>
       </p>
