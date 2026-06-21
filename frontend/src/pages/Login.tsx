@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useLocation } from 'react-router-dom'
 import { LoginForm } from '@/features/auth/components/LoginForm'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 
 export const Login = () => {
   const navigate = useNavigate()
+  const location = useLocation()
   const { isAuthenticated } = useAuth()
   const [mounted, setMounted] = useState(false)
 
@@ -49,6 +50,24 @@ export const Login = () => {
               Welcome back to <span className="gradient-text">Thunder</span>
             </h1>
             <p style={styles.subtitle}>Sign in to manage your boards and tasks</p>
+            {location.state?.from?.pathname?.startsWith('/join/') && (
+              <div style={{
+                background: 'rgba(124, 58, 237, 0.12)',
+                border: '1px solid rgba(124, 58, 237, 0.3)',
+                borderRadius: 12,
+                padding: '12px 16px',
+                marginTop: 20,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                textAlign: 'left',
+              }}>
+                <span style={{ fontSize: '1.25rem' }}>👋</span>
+                <p style={{ fontSize: '0.82rem', color: '#c084fc', margin: 0, fontWeight: 500, lineHeight: 1.4 }}>
+                  You have been invited to join a board. Please sign in to accept the invitation.
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Form Content */}
