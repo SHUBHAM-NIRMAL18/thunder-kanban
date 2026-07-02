@@ -1,8 +1,12 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { User, Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react'
+import { GoogleLogin } from '@react-oauth/google'
+import toast from 'react-hot-toast'
+import { authApi } from '@/api/endpoints/auth'
+import { useAuthStore } from '../store/authStore'
 import { registerSchema, type RegisterFormData } from '../schemas/authSchemas'
 import { useRegister } from '../hooks/useRegister'
 
@@ -11,6 +15,12 @@ export const RegisterForm = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [showPassword2, setShowPassword2] = useState(false)
   const location = useLocation()
+  const navigate = useNavigate()
+  const { login } = useAuthStore()
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
+
+  const isSubmitting = isLoading || isGoogleLoading
+
   const {
     register,
     handleSubmit,
@@ -21,6 +31,25 @@ export const RegisterForm = () => {
 
   const onSubmit = (data: RegisterFormData) => {
     handleRegister(data)
+  }
+
+  const handleGoogleSuccess = async (credentialResponse: any) => {
+    const idToken = credentialResponse.credential
+    if (!idToken) return
+    
+    setIsGoogleLoading(true)
+    try {
+      const response = await authApi.googleLogin(idToken)
+      login(response.data.user, response.data.tokens)
+      toast.success('Google login successful!')
+      const from = (location.state as any)?.from?.pathname || '/dashboard'
+      navigate(from, { replace: true })
+    } catch (error: unknown) {
+      console.error('Google login error:', error)
+      toast.error('Google login failed. Please try again.')
+    } finally {
+      setIsGoogleLoading(false)
+    }
   }
 
   return (
@@ -40,7 +69,7 @@ export const RegisterForm = () => {
               type="text"
               placeholder="John"
               {...register('first_name')}
-              disabled={isLoading}
+              disabled={isSubmitting}
               className={`w-full pl-10 pr-4 py-2.5 bg-white/[0.04] border ${
                 errors.first_name ? 'border-red-500/80 focus:ring-red-500/20' : 'border-white/10 focus:border-violet-500/80 focus:ring-violet-500/20'
               } rounded-xl text-slate-100 placeholder:text-slate-500 text-sm focus:outline-none focus:ring-4 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed`}
@@ -67,7 +96,7 @@ export const RegisterForm = () => {
               type="text"
               placeholder="Doe"
               {...register('last_name')}
-              disabled={isLoading}
+              disabled={isSubmitting}
               className={`w-full pl-10 pr-4 py-2.5 bg-white/[0.04] border ${
                 errors.last_name ? 'border-red-500/80 focus:ring-red-500/20' : 'border-white/10 focus:border-violet-500/80 focus:ring-violet-500/20'
               } rounded-xl text-slate-100 placeholder:text-slate-500 text-sm focus:outline-none focus:ring-4 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed`}
@@ -96,7 +125,7 @@ export const RegisterForm = () => {
             type="email"
             placeholder="you@example.com"
             {...register('email')}
-            disabled={isLoading}
+            disabled={isSubmitting}
             className={`w-full pl-10 pr-4 py-2.5 bg-white/[0.04] border ${
               errors.email ? 'border-red-500/80 focus:ring-red-500/20' : 'border-white/10 focus:border-violet-500/80 focus:ring-violet-500/20'
             } rounded-xl text-slate-100 placeholder:text-slate-500 text-sm focus:outline-none focus:ring-4 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed`}
@@ -124,7 +153,7 @@ export const RegisterForm = () => {
             type={showPassword ? 'text' : 'password'}
             placeholder="••••••••"
             {...register('password')}
-            disabled={isLoading}
+            disabled={isSubmitting}
             className={`w-full pl-10 pr-10 py-2.5 bg-white/[0.04] border ${
               errors.password ? 'border-red-500/80 focus:ring-red-500/20' : 'border-white/10 focus:border-violet-500/80 focus:ring-violet-500/20'
             } rounded-xl text-slate-100 placeholder:text-slate-500 text-sm focus:outline-none focus:ring-4 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed`}
@@ -159,7 +188,7 @@ export const RegisterForm = () => {
             type={showPassword2 ? 'text' : 'password'}
             placeholder="••••••••"
             {...register('password2')}
-            disabled={isLoading}
+            disabled={isSubmitting}
             className={`w-full pl-10 pr-10 py-2.5 bg-white/[0.04] border ${
               errors.password2 ? 'border-red-500/80 focus:ring-red-500/20' : 'border-white/10 focus:border-violet-500/80 focus:ring-violet-500/20'
             } rounded-xl text-slate-100 placeholder:text-slate-500 text-sm focus:outline-none focus:ring-4 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed`}
@@ -183,10 +212,10 @@ export const RegisterForm = () => {
       {/* Submit Button */}
       <button
         type="submit"
-        disabled={isLoading}
+        disabled={isSubmitting}
         className="w-full py-2.5 px-4 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 active:scale-[0.98] text-white font-semibold rounded-xl shadow-[0_4px_16px_rgba(124,58,237,0.25)] hover:shadow-[0_6px_20px_rgba(124,58,237,0.4)] transition-all duration-250 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-4"
       >
-        {isLoading ? (
+        {isSubmitting ? (
           <>
             <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
@@ -198,6 +227,27 @@ export const RegisterForm = () => {
           'Create Account'
         )}
       </button>
+
+      {/* Divider */}
+      <div className="flex items-center my-4">
+        <div className="flex-grow border-t border-white/10"></div>
+        <span className="mx-3 text-[10px] text-slate-500 uppercase font-bold tracking-wider">Or continue with</span>
+        <div className="flex-grow border-t border-white/10"></div>
+      </div>
+
+      {/* Google Login Button */}
+      <div className="flex justify-center w-full">
+        <GoogleLogin
+          onSuccess={handleGoogleSuccess}
+          onError={() => {
+            toast.error('Google Sign-In failed')
+          }}
+          useOneTap
+          theme="filled_black"
+          shape="pill"
+          width="376"
+        />
+      </div>
 
       {/* Redirect Link */}
       <p className="text-center text-xs text-slate-400 mt-4">
