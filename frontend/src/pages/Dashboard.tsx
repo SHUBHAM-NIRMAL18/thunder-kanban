@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { useBoards } from '@/features/kanban/hooks/useBoards'
@@ -84,10 +84,10 @@ export const Dashboard = () => {
       <nav style={styles.nav} className="glass">
         <div style={styles.navInner}>
           {/* Logo */}
-          <div style={styles.logo}>
+          <Link to="/" style={styles.logo}>
             <span style={styles.logoIcon}>⚡</span>
             <span style={styles.logoText} className="gradient-text">Thunder</span>
-          </div>
+          </Link>
 
           {/* Right section */}
           <div style={styles.navRight}>
@@ -321,7 +321,7 @@ const styles: Record<string, React.CSSProperties> = {
     height: 64,
     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
   },
-  logo: { display: 'flex', alignItems: 'center', gap: 8 },
+  logo: { display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' },
   logoIcon: { fontSize: '1.5rem', lineHeight: 1 },
   logoText: { fontSize: '1.3rem', fontWeight: 800, letterSpacing: '-0.02em' },
   navRight: { display: 'flex', alignItems: 'center', gap: 12 },
