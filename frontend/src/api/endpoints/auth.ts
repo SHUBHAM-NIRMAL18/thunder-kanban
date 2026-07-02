@@ -14,6 +14,11 @@ export const authApi = {
     return response.data;
   },
 
+  googleLogin: async (idToken: string) => {
+    const response = await api.post<ApiResponse<LoginResponse>>('/auth/google/', { id_token: idToken });
+    return response.data;
+  },
+
   register: async (data: RegisterRequest) => {
     const response = await api.post<ApiResponse<RegisterResponse>>('/auth/register/', data);
     return response.data;
