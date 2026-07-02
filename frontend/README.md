@@ -1,73 +1,91 @@
-# React + TypeScript + Vite
+# Thunder Kanban Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, highly interactive, production-grade Kanban Board user interface built with React, TypeScript, and Vite. Features fluid drag-and-drop task organization, real-time validations, state persistence, and seamless Google (Gmail) OAuth2 authentication.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## ⚡ Features
 
-## React Compiler
+* **Visual Kanban Layout**: Organize tasks into columns (Backlog, Todo, In Progress, Done).
+* **Drag-and-Drop**: Fluid, animations-powered drag-and-drop of tasks between columns using `@dnd-kit`.
+* **Google OAuth2 / Gmail Sign-In**: Fully integrated Google Identity Services login button and "One Tap" dropdown.
+* **JWT Authentication**: Secure login/registration with automatic silent token refresh via HTTPOnly cookies.
+* **Task Actions**: Custom dialogs to create, edit, preview task details, delete, and change priorities (Low, Medium, High).
+* **Board Operations**: Create new boards, delete boards, and duplicate existing boards.
+* **Instant Initial Load**: Cache layer via Zustand and LocalStorage to prevent screen flicker and minimize API queries.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## 🛠️ Technology Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+* **React 18**: Frontend UI library.
+* **TypeScript**: Type-safe development.
+* **Vite**: Ultra-fast hot-reloading bundler.
+* **Tailwind CSS**: Rapid utility-first styling.
+* **Zustand**: Lightweight global state management.
+* **dnd-kit**: Flexible, modular drag-and-drop framework.
+* **React Hook Form & Zod**: Schema validation for register, login, and edit forms.
+* **Axios**: Custom HTTP client with interceptors for auth headers and token auto-refresh.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+---
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## 🚀 Getting Started
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### Prerequisites
+
+* **Node.js**: Version 18.0 or higher
+* **npm**: Version 9.0 or higher
+
+### Installation
+
+1. Navigate to the frontend directory:
+   ```bash
+   cd frontend
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Configure environment variables. Create a `.env` file (or edit `.env.local`):
+   ```env
+   VITE_API_BASE_URL=http://localhost:8000/api/v1
+   VITE_GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+   ```
+
+4. Run the development server:
+   ```bash
+   npm run dev
+   ```
+   The application will be running at `http://localhost:5173`.
+
+---
+
+## 🔑 Google Authentication Setup
+
+To configure Google Sign-In:
+1. Obtain an OAuth 2.0 Web Client ID from the [Google Cloud Console](https://console.cloud.google.com/).
+2. Add your local development port (typically `http://localhost:5173`) to Google's **Authorized JavaScript Origins**.
+3. Copy the Client ID and paste it into the `VITE_GOOGLE_CLIENT_ID` environment variable in your frontend `.env`.
+
+---
+
+## 📂 Project Structure
+
 ```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+frontend/
+├── src/
+│   ├── api/            # HTTP client configuration, error interceptors, and endpoint routes
+│   ├── assets/         # App logo, imagery, and static assets
+│   ├── components/     # App-wide UI components (Modals, Buttons, Inputs, Layouts)
+│   ├── features/       # Feature-centric modules
+│   │   ├── auth/       # Login, Register, Google login integration, and auth store
+│   │   ├── boards/     # Board management components, lists, cards, and custom hooks
+│   │   └── kanban/     # Active board view, column containers, drag-and-drop logic
+│   ├── pages/          # Full route pages (Dashboard, Login, Register, Landing Page)
+│   ├── services/       # Cache management, token handlers, and global utility services
+│   ├── styles/         # Global styling rules, animations, and Tailwind imports
+│   ├── App.tsx         # Route registry and top-level providers
+│   └── main.tsx        # Entry point wrapping GoogleOAuthProvider
 ```
