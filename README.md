@@ -7,6 +7,7 @@ A production-grade Kanban board application built with Django REST Framework and
 ## Features
 
 - User registration and login with JWT authentication
+- Google OAuth2 (Gmail) Sign-In and auto-registration with Google One Tap support
 - Token rotation and automatic refresh
 - Create, update, and delete boards
 - Create, update, and delete columns
@@ -29,6 +30,7 @@ A production-grade Kanban board application built with Django REST Framework and
 - Django REST Framework
 - PostgreSQL
 - SimpleJWT for authentication
+- google-auth-library (for Google token verification)
 - drf-spectacular for API documentation
 
 **Frontend:**
@@ -36,6 +38,7 @@ A production-grade Kanban board application built with Django REST Framework and
 - TypeScript
 - Vite
 - Tailwind CSS
+- @react-oauth/google (Google Identity Services integration)
 - Zustand for state management
 - dnd-kit for drag and drop
 - React Hook Form with Zod validation
@@ -91,6 +94,7 @@ DB_USER=postgres
 DB_PASSWORD=your-database-password
 DB_HOST=localhost
 DB_PORT=5432
+GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
 ```
 
 7. Set the PostgreSQL Database
@@ -123,6 +127,7 @@ npm install
 3. Create .env file in the frontend 
 ```bash
 VITE_API_BASE_URL=http://localhost:8000/api/v1
+VITE_GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
 ```
 
 4. Start the development server
