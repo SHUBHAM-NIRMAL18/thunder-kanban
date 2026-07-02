@@ -332,3 +332,112 @@ class UserSearchView(APIView):
         
         serializer = UserSerializer(users, many=True)
         return api_response(data=serializer.data)
+
+
+class GoogleLoginRequestSerializer(drf_serializers.Serializer):
+    id_token = drf_serializers.CharField()
+
+
+class GoogleLoginView(APIView):
+    permission_classes = [AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'auth_login'
+
+    @extend_schema(
+        tags=['Authentication'],
+        summary='Login or signup with Google ID token',
+        request=GoogleLoginRequestSerializer,
+        responses={
+            200: LoginResponseSerializer,
+            400: OpenApiResponse(description='Invalid Google token'),
+        }
+    )
+    def post(self, request):
+        from google.oauth2 import id_token as google_id_token
+        from google.auth.transport import requests as google_requests
+        from django.utils.crypto import get_random_string
+
+        serializer = GoogleLoginRequestSerializer(data=request.data)
+        if not serializer.is_valid():
+            return api_response(
+                errors=[{'field': field, 'detail': str(msg[0])} for field, msg in serializer.errors.items()],
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        token = serializer.validated_data['id_token']
+        try:
+            # Verify the ID token against Google's API
+            idinfo = google_id_token.verify_oauth2_token(
+                token,
+                google_requests.Request(),
+                settings.GOOGLE_CLIENT_ID
+            )
+
+            # Check issuer
+            if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
+                raise ValueError('Wrong issuer.')
+
+            email = idinfo.get('email')
+            if not email:
+                raise ValueError('Email not found in Google token.')
+
+            first_name = idinfo.get('given_name', '')
+            last_name = idinfo.get('family_name', '')
+
+        except ValueError as e:
+            return api_response(
+                errors=[{'detail': f'Invalid Google token: {str(e)}'}],
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Get or create the user
+        user, created = User.objects.get_or_create(
+            email=email,
+            defaults={
+                'first_name': first_name,
+                'last_name': last_name,
+                'is_active': True,
+            }
+        )
+
+        if created:
+            user.set_password(get_random_string(32))
+            user.save()
+        else:
+            # Sync names if they were blank
+            updated = False
+            if not user.first_name and first_name:
+                user.first_name = first_name
+                updated = True
+            if not user.last_name and last_name:
+                user.last_name = last_name
+                updated = True
+            if updated:
+                user.save()
+
+        # Generate access and refresh tokens
+        refresh = RefreshToken.for_user(user)
+        access = str(refresh.access_token)
+
+        response = api_response(
+            data={
+                'user': UserSerializer(user).data,
+                'tokens': {
+                    'access': access,
+                }
+            },
+            meta={'message': 'Google login successful'},
+            status=status.HTTP_200_OK
+        )
+
+        response.set_cookie(
+            key='refresh_token',
+            value=str(refresh),
+            httponly=True,
+            secure=not settings.DEBUG,
+            samesite='Lax',
+            path='/api/v1/auth/',
+            max_age=7 * 24 * 60 * 60,  # 7 days
+        )
+
+        return response
