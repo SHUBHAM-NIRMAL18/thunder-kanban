@@ -23,7 +23,7 @@ const ACCENT_COLORS = [
 ]
 
 export const BoardCard = ({
-  id, slug, name, description, columnsCount, tasksCount, colorIndex,
+  slug, name, description, columnsCount, tasksCount, colorIndex,
   onDuplicate, onDelete,
 }: BoardCardProps) => {
   const [menuOpen, setMenuOpen]     = useState(false)
