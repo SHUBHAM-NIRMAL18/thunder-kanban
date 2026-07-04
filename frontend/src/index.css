@@ -266,3 +266,45 @@ button { font-family: var(--font-sans); cursor: pointer; border: none; backgroun
   background: rgba(255,255,255,0.1);
   border-radius: 99px;
 }
+
+/* ==============================================
+   DASHBOARD UPGRADE STYLES
+   ============================================== */
+.dashboard-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 28px;
+  align-items: start;
+}
+
+@media (min-width: 1024px) {
+  .dashboard-layout {
+    grid-template-columns: 1fr 340px;
+  }
+}
+
+.dashboard-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+@media (min-width: 768px) {
+  .dashboard-controls {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.sidebar-hover-item {
+  transition: all 0.2s ease;
+}
+.sidebar-hover-item:hover {
+  border-color: var(--border-medium) !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  transform: translateX(2px);
+}
+
+
