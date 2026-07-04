@@ -84,7 +84,7 @@ class RegisterView(APIView):
             )
             
             response.set_cookie(
-                key='refresh_token',
+                key='thunder_refresh_token',
                 value=str(refresh),
                 httponly=True,
                 secure=not settings.DEBUG,
@@ -182,7 +182,7 @@ class LoginView(TokenObtainPairView):
         )
         
         response.set_cookie(
-            key='refresh_token',
+            key='thunder_refresh_token',
             value=refresh,
             httponly=True,
             secure=not settings.DEBUG,
@@ -208,8 +208,10 @@ class RefreshTokenView(APIView):
         }
     )
     def post(self, request, *args, **kwargs):
-        refresh_token = request.COOKIES.get('refresh_token')
+        print(f"[DEBUG] RefreshTokenView: cookies received: {list(request.COOKIES.keys())}")
+        refresh_token = request.COOKIES.get('thunder_refresh_token')
         if not refresh_token:
+            print("[DEBUG] RefreshTokenView: thunder_refresh_token NOT found in cookies")
             return api_response(
                 errors=[{'code': 'token_not_found', 'detail': 'Refresh token not found in cookies'}],
                 status=status.HTTP_401_UNAUTHORIZED
@@ -219,12 +221,14 @@ class RefreshTokenView(APIView):
             token = RefreshToken(refresh_token)
             user_id = token['user_id']
             user = User.objects.get(id=user_id)
-        except (TokenError, User.DoesNotExist):
+            print(f"[DEBUG] RefreshTokenView: successfully validated token for user: {user.email}")
+        except (TokenError, User.DoesNotExist) as e:
+            print(f"[DEBUG] RefreshTokenView: validation failed: {str(e)}")
             response = api_response(
                 errors=[{'code': 'token_expired', 'detail': 'Refresh token is invalid or expired'}],
                 status=status.HTTP_401_UNAUTHORIZED
             )
-            response.delete_cookie('refresh_token', path='/api/v1/auth/')
+            response.delete_cookie('thunder_refresh_token', path='/api/v1/auth/')
             return response
         
         # Blacklist old token
@@ -248,7 +252,7 @@ class RefreshTokenView(APIView):
         )
         
         response.set_cookie(
-            key='refresh_token',
+            key='thunder_refresh_token',
             value=str(new_refresh),
             httponly=True,
             secure=not settings.DEBUG,
@@ -271,13 +275,13 @@ class LogoutView(APIView):
         }
     )
     def post(self, request):
-        refresh_token = request.COOKIES.get('refresh_token')
+        refresh_token = request.COOKIES.get('thunder_refresh_token')
         
         response = api_response(
             meta={'message': 'Logout successful'},
             status=status.HTTP_205_RESET_CONTENT
         )
-        response.delete_cookie('refresh_token', path='/api/v1/auth/')
+        response.delete_cookie('thunder_refresh_token', path='/api/v1/auth/')
         
         if refresh_token:
             try:
@@ -419,6 +423,8 @@ class GoogleLoginView(APIView):
         refresh = RefreshToken.for_user(user)
         access = str(refresh.access_token)
 
+        print(f"[DEBUG] GoogleLoginView: Generated refresh token for user {user.email}: {str(refresh)[:15]}...")
+
         response = api_response(
             data={
                 'user': UserSerializer(user).data,
@@ -431,7 +437,7 @@ class GoogleLoginView(APIView):
         )
 
         response.set_cookie(
-            key='refresh_token',
+            key='thunder_refresh_token',
             value=str(refresh),
             httponly=True,
             secure=not settings.DEBUG,
@@ -439,5 +445,6 @@ class GoogleLoginView(APIView):
             path='/api/v1/auth/',
             max_age=7 * 24 * 60 * 60,  # 7 days
         )
+        print(f"[DEBUG] GoogleLoginView: set cookie 'thunder_refresh_token' for user {user.email} path='/api/v1/auth/' SameSite='Lax' Secure={not settings.DEBUG}")
 
-        return response
+        return response
