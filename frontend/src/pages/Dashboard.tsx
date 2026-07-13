@@ -8,6 +8,7 @@ import { CreateBoardModal } from '@/features/boards/components/CreateBoardModal'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { tasksApi } from '@/api/endpoints/tasks'
 import type { Task } from '@/api/endpoints/boards'
+import { ThemeToggle } from '@/components/ThemeToggle'
 
 export const Dashboard = () => {
   const navigate = useNavigate()
@@ -179,6 +180,7 @@ export const Dashboard = () => {
 
           {/* Right section */}
           <div style={styles.navRight}>
+            <ThemeToggle />
             {/* User avatar + dropdown */}
             <div style={{ position: 'relative' }}>
               <button
