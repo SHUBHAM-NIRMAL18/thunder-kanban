@@ -6,6 +6,7 @@ import { BoardSkeleton } from '@/features/kanban/components/BoardSkeleton'
 import { CollaborationModal } from '@/features/boards/components/CollaborationModal'
 import { useKanbanStore } from '@/features/kanban/store/kanbanStore'
 import { useAuth } from '@/features/auth/hooks/useAuth'
+import { ThemeToggle } from '@/components/ThemeToggle'
 
 const ErrorState = ({ message, onBack }: { message: string; onBack: () => void }) => (
   <div style={{ minHeight: '100vh', background: 'var(--bg-base)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -202,6 +203,8 @@ export const Board = () => {
                 Share
               </button>
             </div>
+
+            <ThemeToggle />
 
             <div style={navDivider} />
 
