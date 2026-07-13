@@ -19,7 +19,7 @@ export const BlogPost = () => {
     <StaticPageLayout
       title={post.title}
       subtitle={
-        <span className="text-sm font-semibold text-slate-400 block pt-2">
+        <span className="text-sm font-semibold text-[var(--text-secondary)] block pt-2">
           Published on {post.publishedAt} &bull; {post.readTime}
         </span>
       }
@@ -29,7 +29,7 @@ export const BlogPost = () => {
         <div>
           <Link
             to="/blog"
-            className="inline-flex items-center gap-2 text-sm font-medium text-slate-450 hover:text-white transition-colors"
+            className="inline-flex items-center gap-2 text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
           >
             <span>←</span> Back to Thunder Blog
           </Link>
@@ -51,29 +51,29 @@ export const BlogPost = () => {
         {/* Content Wrapper */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Main Article Content */}
-          <article className="lg:col-span-8 bg-[#0b0f19] p-8 md:p-10 rounded-xl border border-slate-850 glass">
+          <article className="lg:col-span-8 bg-[var(--bg-surface-2)] p-8 md:p-10 rounded-xl border border-[var(--border-subtle)] glass">
             {/* Author Section */}
-            <div className="flex items-center gap-3 pb-8 border-b border-slate-900 mb-8">
+            <div className="flex items-center gap-3 pb-8 border-b border-[var(--border-subtle)] mb-8">
               <div className={`w-12 h-12 rounded-full ${post.author.avatarColor} flex items-center justify-center text-white text-base font-bold`}>
                 {post.author.avatarInitials}
               </div>
               <div>
-                <span className="text-sm font-bold text-white block">{post.author.name}</span>
-                <span className="text-xs text-slate-550 block">Writer & Product Architect</span>
+                <span className="text-sm font-bold text-[var(--text-primary)] block">{post.author.name}</span>
+                <span className="text-xs text-[var(--text-muted)] block">Writer & Product Architect</span>
               </div>
             </div>
 
             {/* Content html injected */}
             <div
-              className="blog-content text-slate-300 space-y-6 leading-relaxed text-base md:text-lg"
+              className="blog-content text-[var(--text-secondary)] space-y-6 leading-relaxed text-base md:text-lg"
               dangerouslySetInnerHTML={{ __html: post.contentHtml }}
             />
           </article>
 
           {/* Lateral Recommendations Sidebar */}
           <aside className="lg:col-span-4 space-y-6">
-            <div className="bg-[#0b0f19] p-6 rounded-xl border border-slate-855 glass space-y-6">
-              <h3 className="text-sm font-bold text-white border-b border-slate-900 pb-3">
+            <div className="bg-[var(--bg-surface-2)] p-6 rounded-xl border border-[var(--border-subtle)] glass space-y-6">
+              <h3 className="text-sm font-bold text-[var(--text-primary)] border-b border-[var(--border-subtle)] pb-3">
                 Suggested Articles
               </h3>
               <div className="flex flex-col gap-6">
@@ -83,13 +83,13 @@ export const BlogPost = () => {
                     to={`/blog/${rec.slug}`}
                     className="block group space-y-2.5"
                   >
-                    <span className="text-[10px] font-extrabold text-blue-400 uppercase tracking-wider block">
+                    <span className="text-[10px] font-extrabold text-blue-450 uppercase tracking-wider block">
                       {rec.category}
                     </span>
-                    <h4 className="text-sm font-bold text-white group-hover:text-blue-400 transition-colors leading-snug">
+                    <h4 className="text-sm font-bold text-[var(--text-primary)] group-hover:text-blue-400 transition-colors leading-snug">
                       {rec.title}
                     </h4>
-                    <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
+                    <p className="text-xs text-[var(--text-secondary)] line-clamp-2 leading-relaxed">
                       {rec.description}
                     </p>
                   </Link>
@@ -99,8 +99,8 @@ export const BlogPost = () => {
 
             {/* Call to action sidebar card */}
             <div className="bg-gradient-to-tr from-blue-600/10 to-indigo-750/10 p-6 rounded-xl border border-blue-500/25 text-center space-y-4">
-              <h3 className="text-base font-bold text-white">Get Organized Today</h3>
-              <p className="text-xs text-slate-350 leading-relaxed">
+              <h3 className="text-base font-bold text-[var(--text-primary)]">Get Organized Today</h3>
+              <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
                 Experience lightning-fast Kanban boards with instant drag-and-drop state sync.
               </p>
               <Link
