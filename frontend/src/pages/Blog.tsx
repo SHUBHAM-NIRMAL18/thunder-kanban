@@ -29,7 +29,7 @@ export const Blog = () => {
     >
       <div className="space-y-12">
         {/* Search and Category Filter Row */}
-        <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-[#0b0f19] p-4 rounded-xl border border-slate-850 glass">
+        <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-[var(--bg-surface-2)] p-4 rounded-xl border border-[var(--border-subtle)] glass">
           {/* Categories */}
           <div className="flex flex-wrap gap-2 w-full md:w-auto">
             {categories.map((cat) => (
@@ -39,7 +39,7 @@ export const Blog = () => {
                 className={`text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all ${
                   activeCategory === cat
                     ? 'bg-blue-600 border-blue-500 text-white shadow-md shadow-blue-500/10'
-                    : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+                    : 'bg-[var(--bg-surface)] border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-slate-500'
                 }`}
               >
                 {cat}
@@ -64,7 +64,7 @@ export const Blog = () => {
 
         {/* Featured Post (Only when no filtering is active) */}
         {!searchQuery && activeCategory === 'All' && featuredPost && (
-          <div className="bg-[#0b0f19] border border-slate-850 rounded-2xl glass overflow-hidden grid grid-cols-1 lg:grid-cols-12 gap-0 group">
+          <div className="bg-[var(--bg-surface-2)] border border-[var(--border-subtle)] rounded-2xl glass overflow-hidden grid grid-cols-1 lg:grid-cols-12 gap-0 group">
             {/* Featured Gradient Banner */}
             <div className={`lg:col-span-6 bg-gradient-to-tr ${featuredPost.bannerGradient} flex flex-col justify-between p-8 md:p-12 text-white relative min-h-[300px] lg:min-h-[400px]`}>
               <span className="absolute top-6 left-6 text-5xl opacity-20">⚡</span>
@@ -87,19 +87,19 @@ export const Blog = () => {
                 <span className="text-xs font-extrabold text-blue-500 uppercase tracking-widest">
                   {featuredPost.category}
                 </span>
-                <p className="text-slate-300 leading-relaxed text-base md:text-lg">
+                <p className="text-[var(--text-secondary)] leading-relaxed text-base md:text-lg">
                   {featuredPost.description}
                 </p>
               </div>
 
-              <div className="flex items-center justify-between pt-4 border-t border-slate-900">
+              <div className="flex items-center justify-between pt-4 border-t border-[var(--border-subtle)]">
                 <div className="flex items-center gap-3">
                   <div className={`w-10 h-10 rounded-full ${featuredPost.author.avatarColor} flex items-center justify-center text-white text-sm font-bold`}>
                     {featuredPost.author.avatarInitials}
                   </div>
                   <div>
-                    <span className="text-sm font-bold text-white block">{featuredPost.author.name}</span>
-                    <span className="text-xs text-slate-500 block">Writer & Contributor</span>
+                    <span className="text-sm font-bold text-[var(--text-primary)] block">{featuredPost.author.name}</span>
+                    <span className="text-xs text-[var(--text-muted)] block">Writer & Contributor</span>
                   </div>
                 </div>
 
@@ -120,7 +120,7 @@ export const Blog = () => {
             {listPosts.map((post) => (
               <div
                 key={post.slug}
-                className="bg-[#0b0f19] border border-slate-850 rounded-xl glass overflow-hidden flex flex-col justify-between hover:border-blue-500/30 transition-all duration-300 group"
+                className="bg-[var(--bg-surface-2)] border border-[var(--border-subtle)] rounded-xl glass overflow-hidden flex flex-col justify-between hover:border-blue-500/30 transition-all duration-300 group"
               >
                 {/* Banner Gradient Card top */}
                 <div className={`h-40 bg-gradient-to-tr ${post.bannerGradient} p-6 flex flex-col justify-between text-white relative`}>
@@ -136,21 +136,21 @@ export const Blog = () => {
                 {/* Body Content */}
                 <div className="p-6 flex-1 flex flex-col justify-between gap-6">
                   <div className="space-y-3">
-                    <h3 className="text-lg font-bold text-white group-hover:text-blue-400 transition-colors line-clamp-2 leading-snug">
+                    <h3 className="text-lg font-bold text-[var(--text-primary)] group-hover:text-blue-400 transition-colors line-clamp-2 leading-snug">
                       {post.title}
                     </h3>
-                    <p className="text-slate-400 text-sm leading-relaxed line-clamp-3">
+                    <p className="text-[var(--text-secondary)] text-sm leading-relaxed line-clamp-3">
                       {post.description}
                     </p>
                   </div>
 
-                  <div className="flex items-center justify-between pt-4 border-t border-slate-900">
+                  <div className="flex items-center justify-between pt-4 border-t border-[var(--border-subtle)]">
                     <div className="flex items-center gap-2.5">
                       <div className={`w-8 h-8 rounded-full ${post.author.avatarColor} flex items-center justify-center text-white text-xs font-bold`}>
                         {post.author.avatarInitials}
                       </div>
                       <div>
-                        <span className="text-xs font-bold text-white block">{post.author.name}</span>
+                        <span className="text-xs font-bold text-[var(--text-primary)] block">{post.author.name}</span>
                       </div>
                     </div>
 
@@ -166,9 +166,9 @@ export const Blog = () => {
             ))}
           </div>
         ) : (
-          <div className="text-center py-20 bg-[#0b0f19] rounded-xl border border-slate-850 glass">
+          <div className="text-center py-20 bg-[var(--bg-surface-2)] rounded-xl border border-[var(--border-subtle)] glass">
             <span className="text-4xl block mb-3">🔍</span>
-            <p className="text-slate-400">No articles match your search or filter requirements.</p>
+            <p className="text-[var(--text-secondary)]">No articles match your search or filter requirements.</p>
             <button
               onClick={() => {
                 setSearchQuery('')
