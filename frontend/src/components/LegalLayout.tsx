@@ -42,8 +42,8 @@ export const LegalLayout = ({ title, subtitle, sections }: LegalLayoutProps) => 
     <StaticPageLayout title={title} subtitle={subtitle}>
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
         {/* Sticky Sidebar */}
-        <aside className="lg:col-span-1 lg:sticky lg:top-24 bg-[#0b0f19] p-6 rounded-xl border border-slate-850 glass">
-          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Sections</h3>
+        <aside className="lg:col-span-1 lg:sticky lg:top-24 bg-[var(--bg-surface-2)] p-6 rounded-xl border border-[var(--border-subtle)] glass">
+          <h3 className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider mb-4">Sections</h3>
           <nav className="flex flex-col gap-2">
             {sections.map((sec) => (
               <a
@@ -57,7 +57,7 @@ export const LegalLayout = ({ title, subtitle, sections }: LegalLayoutProps) => 
                 className={`text-sm font-medium transition-all text-left py-2 px-3 rounded-md border-l-2 ${
                   activeSection === sec.id
                     ? 'bg-blue-600/10 text-blue-400 border-blue-500 font-semibold'
-                    : 'text-slate-400 border-transparent hover:text-white hover:bg-slate-900/50'
+                    : 'text-[var(--text-secondary)] border-transparent hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)]'
                 }`}
               >
                 {sec.title}
@@ -67,13 +67,13 @@ export const LegalLayout = ({ title, subtitle, sections }: LegalLayoutProps) => 
         </aside>
 
         {/* Document Content */}
-        <div className="lg:col-span-3 bg-[#0b0f19] p-8 md:p-10 rounded-xl border border-slate-850 glass space-y-12">
+        <div className="lg:col-span-3 bg-[var(--bg-surface-2)] p-8 md:p-10 rounded-xl border border-[var(--border-subtle)] glass space-y-12">
           {sections.map((sec) => (
             <section key={sec.id} id={sec.id} className="scroll-mt-24">
-              <h2 className="text-xl md:text-2xl font-bold text-white mb-4 flex items-center gap-2">
+              <h2 className="text-xl md:text-2xl font-bold text-[var(--text-primary)] mb-4 flex items-center gap-2">
                 <span className="text-blue-500 font-mono text-sm">#</span> {sec.title}
               </h2>
-              <div className="text-slate-300 leading-relaxed space-y-4 text-sm md:text-base">
+              <div className="text-[var(--text-secondary)] leading-relaxed space-y-4 text-sm md:text-base">
                 {sec.content}
               </div>
             </section>
