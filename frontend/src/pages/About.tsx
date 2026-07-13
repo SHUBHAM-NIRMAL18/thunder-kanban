@@ -28,21 +28,21 @@ export const About = () => {
         {/* Intro Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div className="space-y-6">
-            <h2 className="text-2xl md:text-3xl font-bold text-white">
+            <h2 className="text-2xl md:text-3xl font-bold text-[var(--text-primary)]">
               Why We Built <span className="text-blue-500">Thunder Kanban</span>
             </h2>
-            <p className="text-slate-300 leading-relaxed">
+            <p className="text-[var(--text-secondary)] leading-relaxed">
               Traditional project management applications have become bloated, slow, and overly complicated. They demand hours of setup and drag browser tabs down with heavy client scripts.
             </p>
-            <p className="text-slate-300 leading-relaxed">
+            <p className="text-[var(--text-secondary)] leading-relaxed">
               We wanted a tool that behaves like a local native app—instantaneous, smooth, and lightweight—while retaining real-time synchronization, fluid drag-and-drop mechanics, and custom board control.
             </p>
           </div>
-          <div className="p-8 rounded-2xl bg-[#0b0f19] border border-slate-850 glass relative overflow-hidden flex flex-col justify-center items-center text-center">
+          <div className="p-8 rounded-2xl bg-[var(--bg-surface-2)] border border-[var(--border-subtle)] glass relative overflow-hidden flex flex-col justify-center items-center text-center">
             <div className="absolute -top-10 -right-10 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl" />
             <span className="text-7xl mb-4 animate-bounce">⚡</span>
-            <h3 className="text-2xl font-bold text-white mb-2">Our Mission</h3>
-            <p className="text-slate-400 max-w-sm">
+            <h3 className="text-2xl font-bold text-[var(--text-primary)] mb-2">Our Mission</h3>
+            <p className="text-[var(--text-muted)] max-w-sm">
               Empower builders, coders, and creators to plan projects at the speed of thought.
             </p>
           </div>
@@ -50,33 +50,33 @@ export const About = () => {
 
         {/* Core Values */}
         <div className="space-y-8">
-          <h2 className="text-2xl font-bold text-white text-center">Our Core Pillars</h2>
+          <h2 className="text-2xl font-bold text-[var(--text-primary)] text-center">Our Core Pillars</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {values.map((v, idx) => (
               <div
                 key={idx}
-                className="bg-[#0b0f19] p-6 rounded-xl border border-slate-850 glass hover:border-blue-500/30 transition-all duration-300 group"
+                className="bg-[var(--bg-surface-2)] p-6 rounded-xl border border-[var(--border-subtle)] glass hover:border-blue-500/30 transition-all duration-300 group"
               >
                 <span className="text-3xl mb-4 block group-hover:scale-110 transition-transform duration-200">{v.emoji}</span>
-                <h3 className="text-lg font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">{v.title}</h3>
-                <p className="text-sm text-slate-400 leading-relaxed">{v.description}</p>
+                <h3 className="text-lg font-bold text-[var(--text-primary)] mb-2 group-hover:text-blue-400 transition-colors">{v.title}</h3>
+                <p className="text-sm text-[var(--text-muted)] leading-relaxed">{v.description}</p>
               </div>
             ))}
           </div>
         </div>
 
         {/* Team / Creator Card */}
-        <div className="bg-[#0b0f19] p-8 md:p-10 rounded-2xl border border-slate-850 glass text-center max-w-2xl mx-auto space-y-6">
+        <div className="bg-[var(--bg-surface-2)] p-8 md:p-10 rounded-2xl border border-[var(--border-subtle)] glass text-center max-w-2xl mx-auto space-y-6">
           <div className="relative inline-block">
             <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center text-white text-3xl font-extrabold shadow-lg mx-auto">
               SN
             </div>
-            <div className="absolute bottom-0 right-1 w-6 h-6 rounded-full bg-green-500 border-2 border-[#0b0f19]" title="Creator Online" />
+            <div className="absolute bottom-0 right-1 w-6 h-6 rounded-full bg-green-500 border-2 border-[var(--bg-surface-2)]" title="Creator Online" />
           </div>
           <div className="space-y-2">
-            <h3 className="text-xl font-bold text-white">Shubham Nirmal</h3>
+            <h3 className="text-xl font-bold text-[var(--text-primary)]">Shubham Nirmal</h3>
             <p className="text-sm text-blue-400 font-medium">Founder & Developer</p>
-            <p className="text-slate-400 text-sm max-w-md mx-auto">
+            <p className="text-[var(--text-muted)] text-sm max-w-md mx-auto">
               A software engineering enthusiast dedicated to creating responsive, high-performance web applications that enhance workflow efficiency.
             </p>
           </div>
@@ -85,7 +85,7 @@ export const About = () => {
               href="https://github.com/SHUBHAM-NIRMAL18"
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-slate-900 hover:bg-slate-850 border border-slate-800 text-slate-300 hover:text-white px-4 py-2 rounded-lg text-sm transition-all"
+              className="bg-[var(--bg-surface)] hover:bg-[var(--bg-hover)] border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] px-4 py-2 rounded-lg text-sm transition-all"
             >
               GitHub Profile
             </a>
