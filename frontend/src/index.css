@@ -307,4 +307,112 @@ button { font-family: var(--font-sans); cursor: pointer; border: none; backgroun
   transform: translateX(2px);
 }
 
+/* ==============================================
+   LIGHT THEME OVERRIDES
+   ============================================== */
+.light {
+  /* Colors */
+  --bg-base:        #f8fafc;
+  --bg-surface:     rgba(0, 0, 0, 0.03);
+  --bg-surface-2:   rgba(0, 0, 0, 0.05);
+  --bg-hover:       rgba(0, 0, 0, 0.07);
+
+  --border-subtle:  rgba(0, 0, 0, 0.07);
+  --border-medium:  rgba(0, 0, 0, 0.12);
+  --border-glow:    rgba(124, 58, 237, 0.3);
+
+  --text-primary:   #0f172a;
+  --text-secondary: rgba(15, 23, 42, 0.65);
+  --text-muted:     rgba(15, 23, 42, 0.45);
+
+  --accent:         #7c3aed;
+  --accent-light:   #6d28d9;
+  --accent-end:     #4f46e5;
+  --accent-glow:    rgba(124, 58, 237, 0.12);
+
+  --danger:         #dc2626;
+  --danger-soft:    rgba(220, 38, 38, 0.08);
+
+  --success:        #16a34a;
+
+  /* Card accent palette for board cards */
+  --card-c1: #6d28d9;
+  --card-c2: #0284c7;
+  --card-c3: #d97706;
+  --card-c4: #059669;
+  --card-c5: #db2777;
+  --card-c6: #ea580c;
+
+  /* Priority light tokens */
+  --priority-low-bg:    rgba(22, 163, 74, 0.08);
+  --priority-low-text:  #16a34a;
+  --priority-low-bar:   #16a34a;
+
+  --priority-med-bg:    rgba(217, 119, 6, 0.08);
+  --priority-med-text:  #d97706;
+  --priority-med-bar:   #d97706;
+
+  --priority-high-bg:   rgba(220, 38, 38, 0.08);
+  --priority-high-text: #dc2626;
+  --priority-high-bar:  #dc2626;
+
+  /* Shadows */
+  --shadow-sm:   0 2px 8px rgba(0,0,0,0.05);
+  --shadow-md:   0 8px 32px rgba(0,0,0,0.06);
+  --shadow-glow: 0 0 40px rgba(124, 58, 237, 0.08);
+}
+
+/* Light scrollbar overrides */
+.light ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+}
+.light ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.25);
+}
+.light .kanban-scroll::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+}
+
+/* Light glass overrides */
+.light .glass {
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid var(--border-subtle);
+}
+.light .glass-strong {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid var(--border-medium);
+}
+.light .glass-card {
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid var(--border-subtle);
+}
+.light .glass-card:hover {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: var(--border-medium);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.06), 0 0 0 1px rgba(124,58,237,0.1);
+}
+
+/* Light form input overrides */
+.light .dark-input {
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+}
+.light .dark-input:focus {
+  background: rgba(124, 58, 237, 0.03);
+  border-color: var(--accent);
+}
+.light .dark-input::placeholder {
+  color: var(--text-muted);
+}
+
+/* Light sidebar items */
+.light .sidebar-hover-item:hover {
+  background: rgba(0, 0, 0, 0.04) !important;
+}
+.light .sidebar-item {
+  background: rgba(0, 0, 0, 0.01) !important;
+}
+
+
 
