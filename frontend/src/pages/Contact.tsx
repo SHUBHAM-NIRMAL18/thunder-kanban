@@ -46,10 +46,10 @@ export const Contact = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
         {/* Help Cards */}
         <div className="lg:col-span-1 flex flex-col gap-6">
-          <div className="bg-[#0b0f19] p-6 rounded-xl border border-slate-850 glass space-y-3">
+          <div className="bg-[var(--bg-surface-2)] p-6 rounded-xl border border-[var(--border-subtle)] glass space-y-3">
             <span className="text-2xl">📧</span>
-            <h3 className="text-lg font-bold text-white">Email Us</h3>
-            <p className="text-sm text-slate-400">
+            <h3 className="text-lg font-bold text-[var(--text-primary)]">Email Us</h3>
+            <p className="text-sm text-[var(--text-secondary)]">
               Drop us a line directly for partnership inquiries or account-related help.
             </p>
             <a
@@ -60,10 +60,10 @@ export const Contact = () => {
             </a>
           </div>
 
-          <div className="bg-[#0b0f19] p-6 rounded-xl border border-slate-850 glass space-y-3">
+          <div className="bg-[var(--bg-surface-2)] p-6 rounded-xl border border-[var(--border-subtle)] glass space-y-3">
             <span className="text-2xl">🌐</span>
-            <h3 className="text-lg font-bold text-white">Open Source</h3>
-            <p className="text-sm text-slate-400">
+            <h3 className="text-lg font-bold text-[var(--text-primary)]">Open Source</h3>
+            <p className="text-sm text-[var(--text-secondary)]">
               Thunder Kanban is open-source. Report issues or suggest pull requests directly on our repository.
             </p>
             <a
@@ -76,32 +76,32 @@ export const Contact = () => {
             </a>
           </div>
 
-          <div className="bg-[#0b0f19] p-6 rounded-xl border border-slate-850 glass space-y-3 flex-1">
+          <div className="bg-[var(--bg-surface-2)] p-6 rounded-xl border border-[var(--border-subtle)] glass space-y-3 flex-1">
             <span className="text-2xl">⚡</span>
-            <h3 className="text-lg font-bold text-white">Average Response Time</h3>
-            <p className="text-sm text-slate-400 leading-relaxed">
+            <h3 className="text-lg font-bold text-[var(--text-primary)]">Average Response Time</h3>
+            <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
               We monitor feedback and bugs around the clock. Typical response rates are:
             </p>
             <div className="grid grid-cols-2 gap-4 pt-2">
-              <div className="p-3 bg-slate-900/60 rounded-lg text-center border border-slate-800">
-                <span className="text-xs text-slate-500 block">Bugs & Security</span>
-                <span className="text-sm font-bold text-green-400">&lt; 12 hours</span>
+              <div className="p-3 bg-[var(--bg-surface)] rounded-lg text-center border border-[var(--border-subtle)]">
+                <span className="text-xs text-[var(--text-muted)] block">Bugs & Security</span>
+                <span className="text-sm font-bold text-green-500">&lt; 12 hours</span>
               </div>
-              <div className="p-3 bg-slate-900/60 rounded-lg text-center border border-slate-800">
-                <span className="text-xs text-slate-500 block">General Help</span>
-                <span className="text-sm font-bold text-slate-300">&lt; 24 hours</span>
+              <div className="p-3 bg-[var(--bg-surface)] rounded-lg text-center border border-[var(--border-subtle)]">
+                <span className="text-xs text-[var(--text-muted)] block">General Help</span>
+                <span className="text-sm font-bold text-[var(--text-secondary)]">&lt; 24 hours</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* Contact Form Box */}
-        <div className="lg:col-span-2 bg-[#0b0f19] p-8 md:p-10 rounded-xl border border-slate-850 glass flex flex-col justify-between">
+        <div className="lg:col-span-2 bg-[var(--bg-surface-2)] p-8 md:p-10 rounded-xl border border-[var(--border-subtle)] glass flex flex-col justify-between">
           {!isSubmitted ? (
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label htmlFor="name" className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                  <label htmlFor="name" className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">
                     Your Name <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -115,7 +115,7 @@ export const Contact = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label htmlFor="email" className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                  <label htmlFor="email" className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">
                     Email Address <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -131,7 +131,7 @@ export const Contact = () => {
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="subject" className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                <label htmlFor="subject" className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">
                   Inquiry Topic
                 </label>
                 <select
@@ -140,15 +140,15 @@ export const Contact = () => {
                   onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                   className="dark-input cursor-pointer"
                 >
-                  <option value="support">General Support & Troubleshooting</option>
-                  <option value="feedback">Feature Request & Feedback</option>
-                  <option value="bug">Security / Bug Reporting</option>
-                  <option value="other">Other Inquiry</option>
+                  <option value="support" className="bg-[var(--bg-base)] text-[var(--text-primary)]">General Support & Troubleshooting</option>
+                  <option value="feedback" className="bg-[var(--bg-base)] text-[var(--text-primary)]">Feature Request & Feedback</option>
+                  <option value="bug" className="bg-[var(--bg-base)] text-[var(--text-primary)]">Security / Bug Reporting</option>
+                  <option value="other" className="bg-[var(--bg-base)] text-[var(--text-primary)]">Other Inquiry</option>
                 </select>
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="message" className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                <label htmlFor="message" className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">
                   Message Details <span className="text-red-500">*</span>
                 </label>
                 <textarea
@@ -186,14 +186,14 @@ export const Contact = () => {
                 ✓
               </div>
               <div className="space-y-2">
-                <h3 className="text-2xl font-bold text-white">Message Dispatched</h3>
-                <p className="text-slate-400 text-sm max-w-sm">
+                <h3 className="text-2xl font-bold text-[var(--text-primary)]">Message Dispatched</h3>
+                <p className="text-[var(--text-secondary)] text-sm max-w-sm">
                   Thank you for reaching out! We've received your request and will follow up with you via email shortly.
                 </p>
               </div>
               <button
                 onClick={handleReset}
-                className="bg-slate-900 border border-slate-800 hover:bg-slate-850 hover:text-white text-slate-300 px-6 py-2.5 rounded-lg text-sm transition-all"
+                className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] hover:bg-[var(--bg-hover)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] px-6 py-2.5 rounded-lg text-sm transition-all"
               >
                 Submit Another Inquiry
               </button>
