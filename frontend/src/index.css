@@ -25,6 +25,10 @@
   --accent-end:     #4f46e5;
   --accent-glow:    rgba(124, 58, 237, 0.35);
 
+  --gradient-text-start: #a78bfa;
+  --gradient-text-mid:   #818cf8;
+  --gradient-text-end:   #c084fc;
+
   --danger:         #ef4444;
   --danger-soft:    rgba(239, 68, 68, 0.12);
 
@@ -200,7 +204,7 @@ button { font-family: var(--font-sans); cursor: pointer; border: none; backgroun
    GRADIENT UTILITIES
 ============================================== */
 .gradient-text {
-  background: linear-gradient(135deg, #a78bfa, #818cf8, #c084fc);
+  background: linear-gradient(135deg, var(--gradient-text-start), var(--gradient-text-mid), var(--gradient-text-end));
   background-size: 200% 200%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -330,6 +334,10 @@ button { font-family: var(--font-sans); cursor: pointer; border: none; backgroun
   --accent-end:     #4f46e5;
   --accent-glow:    rgba(124, 58, 237, 0.12);
 
+  --gradient-text-start: #4f46e5;
+  --gradient-text-mid:   #7c3aed;
+  --gradient-text-end:   #2563eb;
+
   --danger:         #dc2626;
   --danger-soft:    rgba(220, 38, 38, 0.08);
 
@@ -413,6 +421,21 @@ button { font-family: var(--font-sans); cursor: pointer; border: none; backgroun
 .light .sidebar-item {
   background: rgba(0, 0, 0, 0.01) !important;
 }
+
+/* ==============================================
+   TASK CARD THEMED STYLES
+   ============================================== */
+.task-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+}
+.task-card:hover {
+  background: var(--bg-hover) !important;
+  border-color: var(--border-medium) !important;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25), 0 0 0 1px var(--priority-glow) !important;
+  transform: translateY(-2px);
+}
+
 
 
 
