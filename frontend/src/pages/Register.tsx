@@ -63,7 +63,7 @@ export const Register = () => {
                 textAlign: 'left',
               }}>
                 <span style={{ fontSize: '1.25rem' }}>👋</span>
-                <p style={{ fontSize: '0.82rem', color: '#c084fc', margin: 0, fontWeight: 500, lineHeight: 1.4 }}>
+                <p style={{ fontSize: '0.82rem', color: 'var(--accent)', margin: 0, fontWeight: 500, lineHeight: 1.4 }}>
                   You have been invited to join a board. Please create an account to accept the invitation.
                 </p>
               </div>
