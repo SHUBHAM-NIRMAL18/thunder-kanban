@@ -117,7 +117,7 @@ const modal: React.CSSProperties = {
 
 const cancelBtn: React.CSSProperties = {
   padding: '9px 18px', borderRadius: 9,
-  background: 'rgba(255,255,255,0.05)',
+  background: 'var(--bg-surface)',
   border: '1px solid var(--border-subtle)',
   color: 'var(--text-secondary)', fontSize: '0.85rem', fontWeight: 500,
   cursor: 'pointer', transition: 'all 0.15s',

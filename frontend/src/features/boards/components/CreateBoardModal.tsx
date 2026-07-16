@@ -203,7 +203,7 @@ const closeBtn: React.CSSProperties = {
   marginLeft: 'auto', flexShrink: 0,
   width: 32, height: 32, borderRadius: 8,
   display: 'flex', alignItems: 'center', justifyContent: 'center',
-  background: 'rgba(255,255,255,0.05)',
+  background: 'var(--bg-surface)',
   border: '1px solid var(--border-subtle)',
   color: 'var(--text-muted)', cursor: 'pointer',
   transition: 'all 0.15s',
@@ -218,7 +218,7 @@ const fieldLabel: React.CSSProperties = {
 
 const inputStyle: React.CSSProperties = {
   width: '100%', padding: '11px 14px',
-  background: 'rgba(255,255,255,0.05)',
+  background: 'var(--bg-surface)',
   border: '1px solid var(--border-subtle)',
   borderRadius: 10,
   color: 'var(--text-primary)',
@@ -240,7 +240,7 @@ const actions: React.CSSProperties = {
 
 const cancelBtn: React.CSSProperties = {
   padding: '10px 20px', borderRadius: 10,
-  background: 'rgba(255,255,255,0.05)',
+  background: 'var(--bg-surface)',
   border: '1px solid var(--border-subtle)',
   color: 'var(--text-secondary)', fontSize: '0.86rem', fontWeight: 500,
   cursor: 'pointer', transition: 'all 0.15s',
