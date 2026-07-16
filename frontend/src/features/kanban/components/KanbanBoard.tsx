@@ -217,10 +217,10 @@ export const KanbanBoard = ({ boardSlug }: KanbanBoardProps) => {
             alignItems: 'center',
             gap: 6,
           }}>
-            <span style={{ padding: '3px 10px', borderRadius: 20, background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-subtle)' }}>
+            <span style={{ padding: '3px 10px', borderRadius: 20, background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
               {board.columns.length} column{board.columns.length !== 1 ? 's' : ''}
             </span>
-            <span style={{ padding: '3px 10px', borderRadius: 20, background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border-subtle)' }}>
+            <span style={{ padding: '3px 10px', borderRadius: 20, background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
               {board.columns.reduce((acc, col) => acc + col.tasks.length, 0)} task{board.columns.reduce((acc, col) => acc + col.tasks.length, 0) !== 1 ? 's' : ''}
             </span>
           </span>
@@ -314,7 +314,7 @@ export const KanbanBoard = ({ boardSlug }: KanbanBoardProps) => {
                   textAlign: 'center',
                   padding: '64px 32px',
                   borderRadius: 20,
-                  background: 'rgba(255,255,255,0.03)',
+                  background: 'var(--bg-surface)',
                   border: '1.5px dashed rgba(124,58,237,0.3)',
                   maxWidth: 380,
                 }}>

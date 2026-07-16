@@ -57,20 +57,18 @@ export const ColumnModal = ({ isOpen, onClose, onSubmit }: ColumnModalProps) => 
       <div style={{
         position: 'relative', zIndex: 51,
         width: '100%', maxWidth: 420,
-        background: 'rgba(12,11,22,0.97)',
-        border: '1px solid rgba(255,255,255,0.12)',
         borderRadius: 20,
         boxShadow: '0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(124,58,237,0.1)',
         animation: 'modalIn 0.25s ease',
         overflow: 'hidden',
-      }}>
+      }} className="glass-strong">
         {/* Accent bar */}
         <div style={{ height: 3, background: 'linear-gradient(90deg, var(--accent), var(--accent-end))' }} />
 
         {/* Header */}
         <div style={{
           padding: '20px 24px 18px',
-          borderBottom: '1px solid rgba(255,255,255,0.07)',
+          borderBottom: '1px solid var(--border-subtle)',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
           <div>
@@ -89,7 +87,7 @@ export const ColumnModal = ({ isOpen, onClose, onSubmit }: ColumnModalProps) => 
               display: 'flex', alignItems: 'center',
               transition: 'background 0.15s, color 0.15s',
             }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-hover)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
             onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)' }}
           >
             <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -131,15 +129,15 @@ export const ColumnModal = ({ isOpen, onClose, onSubmit }: ColumnModalProps) => 
                 padding: '9px 20px',
                 borderRadius: 40,
                 border: '1px solid var(--border-subtle)',
-                background: 'rgba(255,255,255,0.04)',
+                background: 'var(--bg-surface)',
                 color: 'var(--text-secondary)',
                 fontWeight: 600, fontSize: '0.85rem',
                 cursor: 'pointer',
                 fontFamily: 'var(--font-sans)',
                 transition: 'background 0.15s, border-color 0.15s',
               }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.borderColor = 'var(--border-medium)' }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'var(--border-subtle)' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-hover)'; e.currentTarget.style.borderColor = 'var(--border-medium)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg-surface)'; e.currentTarget.style.borderColor = 'var(--border-subtle)' }}
             >
               Cancel
             </button>

@@ -71,20 +71,18 @@ export const TaskPreviewModal = ({ isOpen, onClose, task, onEdit, onDelete, onAd
       <div style={{
         position: 'relative', zIndex: 51,
         width: '100%', maxWidth: 500,
-        background: 'rgba(12,11,22,0.97)',
-        border: '1px solid rgba(255,255,255,0.12)',
         borderRadius: 20,
         boxShadow: '0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(124,58,237,0.08)',
         animation: 'modalIn 0.25s ease',
         overflow: 'hidden',
-      }}>
+      }} className="glass-strong">
         {/* Priority accent bar at top */}
         <div style={{ height: 3, background: priority.bar }} />
 
         {/* Header */}
         <div style={{
           padding: '20px 22px 16px',
-          borderBottom: '1px solid rgba(255,255,255,0.07)',
+          borderBottom: '1px solid var(--border-subtle)',
         }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
             <div style={{ flex: 1 }}>
@@ -106,7 +104,7 @@ export const TaskPreviewModal = ({ isOpen, onClose, task, onEdit, onDelete, onAd
                 display: 'flex', alignItems: 'center',
                 transition: 'background 0.15s, color 0.15s',
               }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-hover)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
               onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)' }}
             >
               <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -141,8 +139,8 @@ export const TaskPreviewModal = ({ isOpen, onClose, task, onEdit, onDelete, onAd
                 <span style={{
                   fontSize: '0.78rem', fontWeight: 600,
                   padding: '4px 12px', borderRadius: 99,
-                  background: task.is_overdue ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.06)',
-                  color: task.is_overdue ? '#f87171' : 'var(--text-secondary)',
+                  background: task.is_overdue ? 'var(--danger-soft)' : 'var(--bg-surface-2)',
+                  color: task.is_overdue ? 'var(--danger)' : 'var(--text-secondary)',
                   display: 'flex', alignItems: 'center', gap: 6,
                 }}>
                   <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -161,7 +159,7 @@ export const TaskPreviewModal = ({ isOpen, onClose, task, onEdit, onDelete, onAd
                 <span style={{
                   fontSize: '0.78rem', fontWeight: 600,
                   padding: '4px 12px 4px 6px', borderRadius: 99,
-                  background: 'rgba(255,255,255,0.06)', color: 'var(--text-secondary)',
+                  background: 'var(--bg-surface-2)', color: 'var(--text-secondary)',
                   display: 'flex', alignItems: 'center', gap: 6,
                 }}>
                   <div style={{ width: 18, height: 18, borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent), var(--accent-end))', color: '#fff', fontSize: '0.62rem', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -180,8 +178,8 @@ export const TaskPreviewModal = ({ isOpen, onClose, task, onEdit, onDelete, onAd
             <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: 8, fontWeight: 500, letterSpacing: '0.04em', textTransform: 'uppercase' }}>Description</p>
             {task.description ? (
               <div style={{
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.07)',
+                background: 'var(--bg-surface)',
+                border: '1px solid var(--border-subtle)',
                 borderRadius: 10,
                 padding: '12px 14px',
                 fontSize: '0.85rem',
@@ -201,7 +199,7 @@ export const TaskPreviewModal = ({ isOpen, onClose, task, onEdit, onDelete, onAd
             display: 'flex',
             gap: 20,
             paddingTop: 14,
-            borderTop: '1px solid rgba(255,255,255,0.06)',
+            borderTop: '1px solid var(--border-subtle)',
           }}>
             {[
               { label: 'Created', value: formatDate(task.created_at) },
@@ -215,7 +213,7 @@ export const TaskPreviewModal = ({ isOpen, onClose, task, onEdit, onDelete, onAd
           </div>
 
           {/* Notes / Activity Section */}
-          <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 18 }}>
+          <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: 18 }}>
             <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginBottom: 12, fontWeight: 500, letterSpacing: '0.04em', textTransform: 'uppercase' }}>Activity & Notes</p>
             
             {/* Notes List */}
@@ -226,7 +224,7 @@ export const TaskPreviewModal = ({ isOpen, onClose, task, onEdit, onDelete, onAd
                   const dateStr = new Date(note.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
                   const canDelete = note.is_author || (boardOwnerEmail && boardOwnerEmail === note.author_email)
                   return (
-                    <div key={note.id} style={{ display: 'flex', gap: 10, background: 'rgba(255,255,255,0.02)', padding: 10, borderRadius: 10, border: '1px solid rgba(255,255,255,0.04)' }}>
+                    <div key={note.id} style={{ display: 'flex', gap: 10, background: 'var(--bg-surface)', padding: 10, borderRadius: 10, border: '1px solid var(--border-subtle)' }}>
                       <div style={{ width: 26, height: 26, borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent), var(--accent-end))', color: '#fff', fontSize: '0.7rem', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         {initials}
                       </div>
@@ -269,7 +267,7 @@ export const TaskPreviewModal = ({ isOpen, onClose, task, onEdit, onDelete, onAd
                 style={{
                   flex: 1,
                   padding: '8px 12px',
-                  background: 'rgba(255,255,255,0.04)',
+                  background: 'var(--bg-surface)',
                   border: '1px solid var(--border-subtle)',
                   borderRadius: 8,
                   color: 'var(--text-primary)',
@@ -305,7 +303,7 @@ export const TaskPreviewModal = ({ isOpen, onClose, task, onEdit, onDelete, onAd
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          borderTop: '1px solid rgba(255,255,255,0.07)',
+          borderTop: '1px solid var(--border-subtle)',
           gap: 10,
         }}>
           <button

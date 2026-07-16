@@ -80,8 +80,8 @@ export const Column = ({
         flexDirection: 'column',
         height: '100%',
         minHeight: 0,
-        background: 'rgba(255,255,255,0.03)',
-        border: `1px solid ${isOver ? accentColor + '60' : 'rgba(255,255,255,0.08)'}`,
+        background: 'var(--bg-surface)',
+        border: `1px solid ${isOver ? accentColor + '60' : 'var(--border-subtle)'}`,
         borderRadius: 16,
         boxShadow: isOver ? `0 0 0 2px ${accentColor}40, 0 8px 32px rgba(0,0,0,0.3)` : '0 4px 16px rgba(0,0,0,0.2)',
         transition: 'border-color 0.2s, box-shadow 0.2s',
@@ -104,7 +104,7 @@ export const Column = ({
             style={{
               flex: 1,
               padding: '4px 10px',
-              background: 'rgba(255,255,255,0.06)',
+              background: 'var(--bg-surface-2)',
               border: `1px solid ${accentColor}80`,
               borderRadius: 8,
               color: 'var(--text-primary)',
@@ -149,13 +149,13 @@ export const Column = ({
             style={{
               padding: '4px 6px',
               borderRadius: 8,
-              background: showMenu ? 'rgba(255,255,255,0.1)' : 'transparent',
+              background: showMenu ? 'var(--bg-hover)' : 'transparent',
               color: 'var(--text-muted)',
               transition: 'background 0.15s, color 0.15s',
               display: 'flex',
               alignItems: 'center',
             }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-hover)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
             onMouseLeave={e => { if (!showMenu) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)' }}}
           >
             <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
@@ -172,7 +172,7 @@ export const Column = ({
                   right: 0,
                   top: 'calc(100% + 6px)',
                   width: 152,
-                  background: 'rgba(15,14,26,0.95)',
+                  background: 'var(--bg-base)',
                   border: '1px solid var(--border-medium)',
                   borderRadius: 12,
                   padding: 6,
@@ -197,7 +197,7 @@ export const Column = ({
                     gap: 8,
                     transition: 'background 0.15s, color 0.15s',
                   }}
-                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.07)'; e.currentTarget.style.color = 'var(--text-primary)' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-hover)'; e.currentTarget.style.color = 'var(--text-primary)' }}
                   onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-secondary)' }}
                 >
                   <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -307,7 +307,7 @@ export const Column = ({
             gap: 6,
             padding: '8px',
             borderRadius: 10,
-            border: `1px dashed ${addHover ? accentColor + 'aa' : 'rgba(255,255,255,0.12)'}`,
+            border: `1px dashed ${addHover ? accentColor + 'aa' : 'var(--border-subtle)'}`,
             background: addHover ? accentColor + '10' : 'transparent',
             color: addHover ? accentColor : 'var(--text-muted)',
             fontSize: '0.8rem',

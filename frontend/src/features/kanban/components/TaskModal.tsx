@@ -92,17 +92,15 @@ export const TaskModal = ({ isOpen, onClose, onSubmit, task, assignees }: TaskMo
       <div style={{
         position: 'relative', zIndex: 51,
         width: '100%', maxWidth: 500,
-        background: 'rgba(12,11,22,0.95)',
-        border: '1px solid rgba(255,255,255,0.12)',
         borderRadius: 20,
         boxShadow: '0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(124,58,237,0.1)',
         animation: 'modalIn 0.25s ease',
         overflow: 'hidden',
-      }}>
+      }} className="glass-strong">
         {/* Header */}
         <div style={{
           padding: '20px 24px 18px',
-          borderBottom: '1px solid rgba(255,255,255,0.07)',
+          borderBottom: '1px solid var(--border-subtle)',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
           <div>
@@ -121,7 +119,7 @@ export const TaskModal = ({ isOpen, onClose, onSubmit, task, assignees }: TaskMo
               display: 'flex', alignItems: 'center',
               transition: 'background 0.15s, color 0.15s',
             }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-hover)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
             onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)' }}
           >
             <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -186,8 +184,8 @@ export const TaskModal = ({ isOpen, onClose, onSubmit, task, assignees }: TaskMo
                     flex: 1,
                     padding: '8px 10px',
                     borderRadius: 10,
-                    border: `1.5px solid ${priority === p.value ? p.color + '80' : 'rgba(255,255,255,0.08)'}`,
-                    background: priority === p.value ? p.bg : 'rgba(255,255,255,0.03)',
+                    border: `1.5px solid ${priority === p.value ? p.color + '80' : 'var(--border-subtle)'}`,
+                    background: priority === p.value ? p.bg : 'var(--bg-surface)',
                     color: priority === p.value ? p.color : 'var(--text-muted)',
                     fontSize: '0.8rem',
                     fontWeight: priority === p.value ? 700 : 500,
@@ -261,8 +259,8 @@ export const TaskModal = ({ isOpen, onClose, onSubmit, task, assignees }: TaskMo
                 borderRadius: 12,
                 maxHeight: 180,
                 overflowY: 'auto',
-                border: '1px solid rgba(255,255,255,0.12)',
-                background: 'rgba(15, 14, 28, 0.98)',
+                border: '1px solid var(--border-medium)',
+                background: 'var(--bg-base)',
                 boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
               }} className="custom-scroll">
                 {/* Option: Unassigned */}
@@ -275,7 +273,7 @@ export const TaskModal = ({ isOpen, onClose, onSubmit, task, assignees }: TaskMo
                     color: 'var(--text-muted)',
                     transition: 'background 0.15s',
                   }}
-                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                  onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
                   onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                 >
                   Unassigned
@@ -294,8 +292,8 @@ export const TaskModal = ({ isOpen, onClose, onSubmit, task, assignees }: TaskMo
                       transition: 'background 0.15s',
                       background: assigneeId === a.id ? 'rgba(124, 58, 237, 0.12)' : 'transparent',
                     }}
-                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-                    onMouseLeave={e => e.currentTarget.style.background = assigneeId === a.id ? 'rgba(124, 58, 237, 0.12)' : 'transparent'}
+                    onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
+                    onMouseLeave={e => e.currentTarget.style.background = assigneeId === a.id ? 'var(--accent-glow)' : 'transparent'}
                   >
                     <div style={{ width: 26, height: 26, borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent), var(--accent-end))', color: '#fff', fontSize: '0.72rem', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       {getInitials(a.first_name, a.last_name, a.email)}
@@ -325,7 +323,6 @@ export const TaskModal = ({ isOpen, onClose, onSubmit, task, assignees }: TaskMo
               value={dueDate}
               onChange={(e) => setDueDate(e.target.value)}
               disabled={isLoading}
-              style={{ colorScheme: 'dark' }}
             />
           </div>
 
@@ -339,7 +336,7 @@ export const TaskModal = ({ isOpen, onClose, onSubmit, task, assignees }: TaskMo
                 padding: '9px 20px',
                 borderRadius: 40,
                 border: '1px solid var(--border-subtle)',
-                background: 'rgba(255,255,255,0.04)',
+                background: 'var(--bg-surface)',
                 color: 'var(--text-secondary)',
                 fontWeight: 600,
                 fontSize: '0.85rem',
@@ -347,8 +344,8 @@ export const TaskModal = ({ isOpen, onClose, onSubmit, task, assignees }: TaskMo
                 fontFamily: 'var(--font-sans)',
                 transition: 'background 0.15s, border-color 0.15s',
               }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.borderColor = 'var(--border-medium)' }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'var(--border-subtle)' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-hover)'; e.currentTarget.style.borderColor = 'var(--border-medium)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg-surface)'; e.currentTarget.style.borderColor = 'var(--border-subtle)' }}
             >
               Cancel
             </button>
