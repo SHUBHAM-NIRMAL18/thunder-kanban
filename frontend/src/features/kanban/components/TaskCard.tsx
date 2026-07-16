@@ -11,24 +11,24 @@ interface TaskCardProps {
 
 const PRIORITY_CONFIG = {
   low: {
-    bar: '#10b981',
-    bg: 'rgba(16, 185, 129, 0.10)',
-    badgeBg: 'rgba(16, 185, 129, 0.15)',
-    badgeText: '#34d399',
+    bar: 'var(--priority-low-bar)',
+    bg: 'var(--priority-low-bg)',
+    badgeBg: 'var(--priority-low-bg)',
+    badgeText: 'var(--priority-low-text)',
     label: 'Low',
   },
   medium: {
-    bar: '#f59e0b',
-    bg: 'rgba(245, 158, 11, 0.10)',
-    badgeBg: 'rgba(245, 158, 11, 0.15)',
-    badgeText: '#fbbf24',
+    bar: 'var(--priority-med-bar)',
+    bg: 'var(--priority-med-bg)',
+    badgeBg: 'var(--priority-med-bg)',
+    badgeText: 'var(--priority-med-text)',
     label: 'Medium',
   },
   high: {
-    bar: '#ef4444',
-    bg: 'rgba(239, 68, 68, 0.10)',
-    badgeBg: 'rgba(239, 68, 68, 0.15)',
-    badgeText: '#f87171',
+    bar: 'var(--priority-high-bar)',
+    bg: 'var(--priority-high-bg)',
+    badgeBg: 'var(--priority-high-bg)',
+    badgeText: 'var(--priority-high-text)',
     label: 'High',
   },
 }
@@ -69,33 +69,15 @@ export const TaskCard = ({ task, onEdit, onDelete, onClick }: TaskCardProps) => 
         opacity: isDragging ? 0.35 : 1,
         position: 'relative',
         borderRadius: 12,
-        background: isDragging ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.045)',
-        border: `1px solid rgba(255,255,255,${isDragging ? '0.05' : '0.09'})`,
         overflow: 'hidden',
         cursor: 'grab',
-        transition: isDragging ? undefined : 'border-color 0.18s, box-shadow 0.18s, background 0.18s, transform 0.15s',
         userSelect: 'none',
-      }}
+        '--priority-glow': priority.bar + '30',
+      } as React.CSSProperties}
       className="task-card"
       {...attributes}
       {...listeners}
       onClick={handleCardClick}
-      onMouseEnter={e => {
-        if (isDragging) return
-        const el = e.currentTarget
-        el.style.background = 'rgba(255,255,255,0.07)'
-        el.style.borderColor = 'rgba(255,255,255,0.16)'
-        el.style.boxShadow = `0 6px 24px rgba(0,0,0,0.35), 0 0 0 1px ${priority.bar}30`
-        el.style.transform = 'translateY(-2px)'
-      }}
-      onMouseLeave={e => {
-        if (isDragging) return
-        const el = e.currentTarget
-        el.style.background = 'rgba(255,255,255,0.045)'
-        el.style.borderColor = 'rgba(255,255,255,0.09)'
-        el.style.boxShadow = 'none'
-        el.style.transform = 'none'
-      }}
     >
       {/* Priority left bar */}
       <div style={{
@@ -203,8 +185,8 @@ export const TaskCard = ({ task, onEdit, onDelete, onClick }: TaskCardProps) => 
               fontWeight: 500,
               padding: '2px 8px',
               borderRadius: 99,
-              background: task.is_overdue ? 'rgba(239,68,68,0.15)' : 'rgba(255,255,255,0.06)',
-              color: task.is_overdue ? '#f87171' : 'var(--text-muted)',
+              background: task.is_overdue ? 'var(--danger-soft)' : 'var(--bg-surface-2)',
+              color: task.is_overdue ? 'var(--danger)' : 'var(--text-muted)',
               display: 'flex',
               alignItems: 'center',
               gap: 4,
