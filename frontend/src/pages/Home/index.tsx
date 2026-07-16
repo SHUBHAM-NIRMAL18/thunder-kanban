@@ -26,7 +26,7 @@ export const Home = () => {
   }, [location])
 
   return (
-    <div className="min-h-screen bg-[#030712] flex flex-col selection:bg-blue-600 selection:text-white">
+    <div className="min-h-screen bg-[var(--bg-base)] flex flex-col selection:bg-blue-600 selection:text-white">
       <Navbar />
       <main className="flex-1">
         <Hero />

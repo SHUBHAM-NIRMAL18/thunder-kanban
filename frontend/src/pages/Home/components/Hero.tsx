@@ -2,22 +2,22 @@ import { Link } from 'react-router-dom'
 
 export const Hero = () => {
   return (
-    <section className="relative overflow-hidden bg-[#030712] py-20 lg:py-32">
+    <section className="relative overflow-hidden bg-[var(--bg-base)] py-20 lg:py-32">
       {/* Decorative Vector Accents (Solid Colors, No Glassmorphism) */}
       <div className="absolute top-1/4 left-1/10 w-96 h-96 bg-blue-900/20 rounded-full blur-3xl -z-10" />
       <div className="absolute bottom-1/4 right-1/10 w-96 h-96 bg-purple-900/20 rounded-full blur-3xl -z-10" />
 
       <div className="container mx-auto px-6 text-center relative z-10">
         {/* Banner Badge */}
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-slate-800 bg-[#0b0f19] mb-8 animate-fade-in">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[var(--border-subtle)] bg-[var(--bg-surface-2)] mb-8 animate-fade-in">
           <span className="flex h-2 w-2 rounded-full bg-blue-500 animate-ping" />
-          <span className="text-xs font-semibold text-slate-300 tracking-wide uppercase">
+          <span className="text-xs font-semibold text-[var(--text-secondary)] tracking-wide uppercase">
             ⚡ Meet Thunder Version 2.0
           </span>
         </div>
 
         {/* Hero Title */}
-        <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold text-white tracking-tight leading-none mb-6">
+        <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold text-[var(--text-primary)] tracking-tight leading-none mb-6">
           Accelerate Your Projects at <br />
           <span className="bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent">
             Lightning Speed.
@@ -25,7 +25,7 @@ export const Hero = () => {
         </h1>
 
         {/* Subtitle */}
-        <p className="mx-auto mb-10 max-w-3xl text-lg md:text-xl text-slate-400 leading-relaxed">
+        <p className="mx-auto mb-10 max-w-3xl text-lg md:text-xl text-[var(--text-secondary)] leading-relaxed">
           A high-performance project organizer designed to keep teams aligned. Plan workflows, prioritize checklists, and track task progress in real-time with responsive board templates.
         </p>
 
@@ -39,7 +39,7 @@ export const Hero = () => {
           </Link>
           <a
             href="#preview"
-            className="w-full sm:w-auto border border-slate-700 bg-[#0b0f19] hover:bg-slate-900 text-slate-200 px-8 py-4 rounded-xl text-base font-semibold hover:-translate-y-0.5 transition-all text-center"
+            className="w-full sm:w-auto border border-[var(--border-medium)] bg-[var(--bg-surface-2)] hover:bg-[var(--bg-hover)] text-[var(--text-primary)] px-8 py-4 rounded-xl text-base font-semibold hover:-translate-y-0.5 transition-all text-center"
           >
             Live Preview
           </a>

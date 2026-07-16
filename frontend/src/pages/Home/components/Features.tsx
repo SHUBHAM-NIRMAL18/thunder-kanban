@@ -39,13 +39,13 @@ export const Features = () => {
   ]
 
   return (
-    <section id="features" className="bg-[#030712] py-20">
+    <section id="features" className="bg-[var(--bg-base)] py-20">
       <div className="container mx-auto px-6">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4">
+          <h2 className="text-3xl md:text-4xl font-extrabold text-[var(--text-primary)] mb-4">
             Everything You Need to Get Done
           </h2>
-          <p className="mx-auto max-w-2xl text-slate-400">
+          <p className="mx-auto max-w-2xl text-[var(--text-secondary)]">
             A visual task organizer packed with speed, convenience, and privacy options to keep you performing at your best.
           </p>
         </div>
@@ -54,15 +54,15 @@ export const Features = () => {
           {list.map((item, idx) => (
             <div
               key={idx}
-              className="bg-[#0b0f19] p-6 rounded-xl border border-slate-800 hover:border-blue-600/50 hover:shadow-lg hover:shadow-blue-500/5 transition-all group duration-300"
+              className="bg-[var(--bg-surface)] p-6 rounded-xl border border-[var(--border-subtle)] hover:border-blue-600/50 hover:shadow-lg hover:shadow-blue-500/5 transition-all group duration-300"
             >
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-slate-900 border border-slate-800 group-hover:border-blue-500/50 transition-colors">
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-[var(--bg-surface-2)] border border-[var(--border-subtle)] group-hover:border-blue-500/50 transition-colors">
                 {item.icon}
               </div>
-              <h3 className="text-lg font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">
+              <h3 className="text-lg font-bold text-[var(--text-primary)] mb-2 group-hover:text-blue-400 transition-colors">
                 {item.title}
               </h3>
-              <p className="text-sm text-slate-400 leading-relaxed">
+              <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
                 {item.desc}
               </p>
             </div>

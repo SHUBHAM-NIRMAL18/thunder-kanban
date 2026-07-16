@@ -32,13 +32,13 @@ export const FAQ = () => {
   }
 
   return (
-    <section id="faq" className="bg-[#030712] py-20 border-t border-slate-900">
+    <section id="faq" className="bg-[var(--bg-base)] py-20 border-t border-[var(--border-subtle)]">
       <div className="container mx-auto px-6 max-w-4xl">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-4">
+          <h2 className="text-3xl md:text-4xl font-extrabold text-[var(--text-primary)] mb-4">
             Frequently Asked Questions
           </h2>
-          <p className="text-slate-400">
+          <p className="text-[var(--text-secondary)]">
             Everything you need to know about organizing your work with Thunder Kanban.
           </p>
         </div>
@@ -49,15 +49,15 @@ export const FAQ = () => {
             return (
               <div
                 key={idx}
-                className="bg-[#0b0f19] border border-slate-800 rounded-xl overflow-hidden transition-colors duration-200"
+                className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-xl overflow-hidden transition-colors duration-200"
               >
                 <button
                   onClick={() => toggle(idx)}
-                  className="w-full text-left px-6 py-5 flex items-center justify-between font-bold text-white hover:text-blue-400 transition-colors"
+                  className="w-full text-left px-6 py-5 flex items-center justify-between font-bold text-[var(--text-primary)] hover:text-blue-400 transition-colors"
                 >
                   <span>{item.q}</span>
                   <svg
-                    className={`w-5 h-5 text-slate-500 transform transition-transform duration-200 ${isOpen ? 'rotate-180 text-blue-400' : ''}`}
+                    className={`w-5 h-5 text-[var(--text-muted)] transform transition-transform duration-200 ${isOpen ? 'rotate-180 text-blue-400' : ''}`}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -67,7 +67,7 @@ export const FAQ = () => {
                 </button>
                 
                 {isOpen && (
-                  <div className="px-6 pb-6 text-slate-400 text-sm leading-relaxed border-t border-slate-900 pt-4 animate-fade-in">
+                  <div className="px-6 pb-6 text-[var(--text-secondary)] text-sm leading-relaxed border-t border-[var(--border-subtle)] pt-4 animate-fade-in">
                     {item.a}
                   </div>
                 )}
