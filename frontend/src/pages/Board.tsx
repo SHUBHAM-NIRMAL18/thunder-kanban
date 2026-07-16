@@ -209,10 +209,10 @@ export const Board = () => {
             <div style={navDivider} />
 
             <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ padding: '3px 9px', borderRadius: 20, background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border-subtle)' }}>
+              <span style={{ padding: '3px 9px', borderRadius: 20, background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
                 {board.columns.length} columns
               </span>
-              <span style={{ padding: '3px 9px', borderRadius: 20, background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border-subtle)' }}>
+              <span style={{ padding: '3px 9px', borderRadius: 20, background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
                 {totalTasks} tasks
               </span>
             </span>
@@ -238,7 +238,7 @@ const renameInputStyle: React.CSSProperties = {
   fontSize: '0.95rem',
   fontWeight: 700,
   color: 'var(--text-primary)',
-  background: 'rgba(255,255,255,0.06)',
+  background: 'var(--bg-surface)',
   border: '1px solid var(--border-subtle)',
   borderRadius: 6,
   padding: '2px 8px',
@@ -301,7 +301,7 @@ const avatarCircle: React.CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  border: '2px solid #07070f',
+  border: '2px solid var(--bg-base)',
   marginRight: -6,
   boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
 }
@@ -312,7 +312,7 @@ const collabBtn: React.CSSProperties = {
   padding: '6px 12px',
   borderRadius: 8,
   border: '1px solid var(--border-subtle)',
-  background: 'rgba(255,255,255,0.04)',
+  background: 'var(--bg-surface)',
   color: 'var(--text-secondary)',
   fontSize: '0.78rem',
   fontWeight: 600,
