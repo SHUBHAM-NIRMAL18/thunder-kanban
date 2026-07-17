@@ -18,6 +18,7 @@ import { TaskModal } from './TaskModal'
 import { ColumnModal } from './ColumnModal'
 import { TaskPreviewModal } from './TaskPreviewModal'
 import { BoardSkeleton } from './BoardSkeleton'
+import { AnalyticsDashboard } from './AnalyticsDashboard'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { useKanban } from '../hooks/useKanban'
 import type { Task } from '@/api/endpoints/boards'
@@ -59,6 +60,7 @@ export const KanbanBoard = ({ boardSlug }: KanbanBoardProps) => {
   const [activeTask, setActiveTask] = useState<Task | null>(null)
   const [addingToColumnId, setAddingToColumnId] = useState<number | null>(null)
   const [previewTaskId, setPreviewTaskId] = useState<number | null>(null)
+  const [activeTab, setActiveTab] = useState<'board' | 'analytics'>('board')
 
   const ownerMember = board ? {
     id: board.owner_id,
@@ -225,6 +227,57 @@ export const KanbanBoard = ({ boardSlug }: KanbanBoardProps) => {
             </span>
           </span>
 
+          {/* View Toggle */}
+          <div style={{
+            display: 'flex',
+            background: 'rgba(255, 255, 255, 0.03)',
+            borderRadius: 18,
+            padding: 3,
+            border: '1px solid var(--border-subtle)',
+            marginLeft: 8
+          }}>
+            <button
+              onClick={() => setActiveTab('board')}
+              style={{
+                padding: '4px 12px',
+                borderRadius: 14,
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                color: activeTab === 'board' ? 'var(--text-primary)' : 'var(--text-muted)',
+                background: activeTab === 'board' ? 'rgba(255, 255, 255, 0.08)' : 'transparent',
+                transition: 'all 0.2s',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 5,
+              }}
+            >
+              <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+              </svg>
+              Board
+            </button>
+            <button
+              onClick={() => setActiveTab('analytics')}
+              style={{
+                padding: '4px 12px',
+                borderRadius: 14,
+                fontSize: '0.75rem',
+                fontWeight: 600,
+                color: activeTab === 'analytics' ? 'var(--text-primary)' : 'var(--text-muted)',
+                background: activeTab === 'analytics' ? 'rgba(255, 255, 255, 0.08)' : 'transparent',
+                transition: 'all 0.2s',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 5,
+              }}
+            >
+              <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+              Dashboard
+            </button>
+          </div>
+
           {isFetching && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.75rem', color: 'var(--text-muted)' }}>
               <svg style={{ animation: 'spin 0.8s linear infinite' }} width="12" height="12" fill="none" viewBox="0 0 24 24">
@@ -236,148 +289,156 @@ export const KanbanBoard = ({ boardSlug }: KanbanBoardProps) => {
           )}
         </div>
 
-        <button
-          onClick={openColumnModal}
-          disabled={board.columns.length >= 10}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 7,
-            padding: '8px 18px',
-            borderRadius: 40,
-            background: 'linear-gradient(135deg, var(--accent), var(--accent-end))',
-            color: '#fff',
-            fontWeight: 600,
-            fontSize: '0.82rem',
-            cursor: board.columns.length >= 10 ? 'not-allowed' : 'pointer',
-            border: 'none',
-            fontFamily: 'var(--font-sans)',
-            opacity: board.columns.length >= 10 ? 0.5 : 1,
-            boxShadow: '0 4px 16px rgba(124,58,237,0.3)',
-            transition: 'all 0.2s ease',
-          }}
-          onMouseEnter={e => {
-            if (board.columns.length < 10) {
-              e.currentTarget.style.transform = 'translateY(-1px)'
-              e.currentTarget.style.boxShadow = '0 6px 24px rgba(124,58,237,0.45)'
-            }
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.transform = 'none'
-            e.currentTarget.style.boxShadow = '0 4px 16px rgba(124,58,237,0.3)'
-          }}
-        >
-          <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
-          </svg>
-          Add Column
-          {board.columns.length >= 10 && <span style={{ opacity: 0.7, fontSize: '0.72rem' }}>(Max 10)</span>}
-        </button>
+        {activeTab === 'board' && (
+          <button
+            onClick={openColumnModal}
+            disabled={board.columns.length >= 10}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 7,
+              padding: '8px 18px',
+              borderRadius: 40,
+              background: 'linear-gradient(135deg, var(--accent), var(--accent-end))',
+              color: '#fff',
+              fontWeight: 600,
+              fontSize: '0.82rem',
+              cursor: board.columns.length >= 10 ? 'not-allowed' : 'pointer',
+              border: 'none',
+              fontFamily: 'var(--font-sans)',
+              opacity: board.columns.length >= 10 ? 0.5 : 1,
+              boxShadow: '0 4px 16px rgba(124,58,237,0.3)',
+              transition: 'all 0.2s ease',
+            }}
+            onMouseEnter={e => {
+              if (board.columns.length < 10) {
+                e.currentTarget.style.transform = 'translateY(-1px)'
+                e.currentTarget.style.boxShadow = '0 6px 24px rgba(124,58,237,0.45)'
+              }
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.transform = 'none'
+              e.currentTarget.style.boxShadow = '0 4px 16px rgba(124,58,237,0.3)'
+            }}
+          >
+            <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+            </svg>
+            Add Column
+            {board.columns.length >= 10 && <span style={{ opacity: 0.7, fontSize: '0.72rem' }}>(Max 10)</span>}
+          </button>
+        )}
       </div>
 
       {/* Board area */}
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCorners}
-        onDragStart={handleDragStart}
-        onDragOver={handleDragOver}
-        onDragEnd={handleDragEnd}
-      >
-        <div className="kanban-scroll" style={{ flex: 1, minHeight: 0 }}>
-          <div style={{ display: 'flex', gap: 16, height: '100%', alignItems: 'stretch' }}>
-            {board.columns.map((column, index) => (
-              <Column
-                key={column.id}
-                column={column}
-                colorIndex={index}
-                isEditing={editingColumnId === column.id}
-                onEditColumn={() => setEditingColumn(column.id)}
-                onDeleteColumn={() => openDeleteModal('column', column.id, column.name)}
-                onUpdateColumnName={(name) => updateColumn(column.id, { name })}
-                onAddTask={() => handleAddTask(column.id)}
-                onEditTask={(task) => openTaskModal(task)}
-                onDeleteTask={(task) => openDeleteModal('task', task.id, task.title)}
-                onTaskClick={handleTaskClick}
-              />
-            ))}
+      {activeTab === 'board' ? (
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCorners}
+          onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
+          onDragEnd={handleDragEnd}
+        >
+          <div className="kanban-scroll" style={{ flex: 1, minHeight: 0 }}>
+            <div style={{ display: 'flex', gap: 16, height: '100%', alignItems: 'stretch' }}>
+              {board.columns.map((column, index) => (
+                <Column
+                  key={column.id}
+                  column={column}
+                  colorIndex={index}
+                  isEditing={editingColumnId === column.id}
+                  onEditColumn={() => setEditingColumn(column.id)}
+                  onDeleteColumn={() => openDeleteModal('column', column.id, column.name)}
+                  onUpdateColumnName={(name) => updateColumn(column.id, { name })}
+                  onAddTask={() => handleAddTask(column.id)}
+                  onEditTask={(task) => openTaskModal(task)}
+                  onDeleteTask={(task) => openDeleteModal('task', task.id, task.title)}
+                  onTaskClick={handleTaskClick}
+                />
+              ))}
 
-            {/* Empty board state */}
-            {board.columns.length === 0 && (
-              <div style={{
-                flex: 1,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                animation: 'fadeIn 0.4s ease',
-              }}>
+              {/* Empty board state */}
+              {board.columns.length === 0 && (
                 <div style={{
-                  textAlign: 'center',
-                  padding: '64px 32px',
-                  borderRadius: 20,
-                  background: 'var(--bg-surface)',
-                  border: '1.5px dashed rgba(124,58,237,0.3)',
-                  maxWidth: 380,
+                  flex: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  animation: 'fadeIn 0.4s ease',
                 }}>
                   <div style={{
-                    width: 72,
-                    height: 72,
-                    borderRadius: '50%',
-                    background: 'rgba(124,58,237,0.1)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    margin: '0 auto 20px',
-                    animation: 'float 3s ease-in-out infinite',
+                    textAlign: 'center',
+                    padding: '64px 32px',
+                    borderRadius: 20,
+                    background: 'var(--bg-surface)',
+                    border: '1.5px dashed rgba(124,58,237,0.3)',
+                    maxWidth: 380,
                   }}>
-                    <span style={{ fontSize: '2rem' }}>📋</span>
-                  </div>
-                  <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8 }}>
-                    No columns yet
-                  </h3>
-                  <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 24 }}>
-                    Add your first column to start organizing tasks
-                  </p>
-                  <button
-                    onClick={openColumnModal}
-                    style={{
-                      display: 'inline-flex',
+                    <div style={{
+                      width: 72,
+                      height: 72,
+                      borderRadius: '50%',
+                      background: 'rgba(124,58,237,0.1)',
+                      display: 'flex',
                       alignItems: 'center',
-                      gap: 7,
-                      padding: '10px 22px',
-                      borderRadius: 40,
-                      background: 'linear-gradient(135deg, var(--accent), var(--accent-end))',
-                      color: '#fff',
-                      fontWeight: 600,
-                      fontSize: '0.85rem',
-                      cursor: 'pointer',
-                      border: 'none',
-                      fontFamily: 'var(--font-sans)',
-                      boxShadow: '0 4px 20px rgba(124,58,237,0.35)',
-                    }}
-                  >
-                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
-                    </svg>
-                    Add Column
-                  </button>
+                      justifyContent: 'center',
+                      margin: '0 auto 20px',
+                      animation: 'float 3s ease-in-out infinite',
+                    }}>
+                      <span style={{ fontSize: '2rem' }}>📋</span>
+                    </div>
+                    <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8 }}>
+                      No columns yet
+                    </h3>
+                    <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 24 }}>
+                      Add your first column to start organizing tasks
+                    </p>
+                    <button
+                      onClick={openColumnModal}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 7,
+                        padding: '10px 22px',
+                        borderRadius: 40,
+                        background: 'linear-gradient(135deg, var(--accent), var(--accent-end))',
+                        color: '#fff',
+                        fontWeight: 600,
+                        fontSize: '0.85rem',
+                        cursor: 'pointer',
+                        border: 'none',
+                        fontFamily: 'var(--font-sans)',
+                        boxShadow: '0 4px 20px rgba(124,58,237,0.35)',
+                      }}
+                    >
+                      <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+                      </svg>
+                      Add Column
+                    </button>
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <DragOverlay>
-          {activeTask ? (
-            <div style={{
-              transform: 'rotate(3deg) scale(1.04)',
-              filter: 'drop-shadow(0 16px 40px rgba(0,0,0,0.5))',
-              animation: 'dragFloat 0.5s ease infinite',
-            }}>
-              <TaskCard task={activeTask} onEdit={() => {}} onDelete={() => {}} onClick={() => {}} />
+              )}
             </div>
-          ) : null}
-        </DragOverlay>
-      </DndContext>
+          </div>
+
+          <DragOverlay>
+            {activeTask ? (
+              <div style={{
+                transform: 'rotate(3deg) scale(1.04)',
+                filter: 'drop-shadow(0 16px 40px rgba(0,0,0,0.5))',
+                animation: 'dragFloat 0.5s ease infinite',
+              }}>
+                <TaskCard task={activeTask} onEdit={() => {}} onDelete={() => {}} onClick={() => {}} />
+              </div>
+            ) : null}
+          </DragOverlay>
+        </DndContext>
+      ) : (
+        <div style={{ flex: 1, minHeight: 0 }}>
+          <AnalyticsDashboard board={board} onTaskClick={handleTaskClick} />
+        </div>
+      )}
 
       {/* Modals */}
       <TaskModal
